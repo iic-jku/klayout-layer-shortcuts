@@ -20,7 +20,6 @@ This add-on can be installed through [KLayout](https://klayout.de) package manag
 
 | Shortcut | Description (What happens)       |
 |----------|----------------------------------|
-| `0`      | show all layers                  |
 | `1`      | metal 1 drawing + pin + labels   |
 | `2`      | metal 2 drawing + pin + labels   |
 | `3`      | metal 3 drawing + pin + labels   |
