@@ -166,9 +166,293 @@ class PDKInfoFactory:
             
 #--------------------------------------------------------------------------------
 
+class LayerShortcutsPlugin(pya.Plugin):
+    def __init__(self, view: pya.LayoutView, pdk_info_factory: PDKInfoFactory):
+        if DEBUG:
+            debug("LayerShortcutPlugin.ctor")
+            
+        super().__init__()
+        self.view = view
+        self.pdk_info_factory = pdk_info_factory
+        
+        self._tech = None
+        self._layer_index_by_name: Dict[str, int] = {}
+
+        try:
+            if self.layout is None:
+                if DEBUG:
+                    debug("LayerShortcutPlugin.ctor: no layout yet, register callback")
+
+                view.on_file_open.connect(self.layout_changed)
+            else:
+                self.setup()
+        except Exception as e:
+            print("LayerShortcutPlugin.ctor caught an exception", e)
+            traceback.print_exc()
+        
+    @property
+    def cell_view(self) -&gt; pya.CellView:
+        return self.view.active_cellview()
+
+    @property
+    def layout(self) -&gt; pya.Layout:
+        return self.cell_view.layout()
+
+    @property
+    def tech(self) -&gt; pya.Technology:
+        return self.layout.technology()
+
+    @property
+    def view_is_visible(self) -&gt; bool:
+        return self.view.widget().isVisible()
+
+    def clear_menu(self):
+        if DEBUG:
+            debug("LayerShortcutPlugin.clear_menu")
+                
+        mw = pya.MainWindow.instance()
+        menu = mw.menu()
+        menu.clear_menu("edit_menu.layer_navigation_group")
+    
+    def trigger_shortcut(self, action: pya.Action, pdk_info: PDKInfo, shortcut: Shortcut):
+        if DEBUG:
+            debug(f"LayerShortcutPlugin.trigger_shortcut: {action} {action.title}")
+        
+        self.view.set_config('hide-empty-layers', 'true')
+        
+        def apply_function(layer_descriptor: LayerDescriptor,
+                           incl_function: Callable[pya.LayerPropertiesIterator, pya.LayerPropertiesNodeRef], 
+                           excl_function: Callable[pya.LayerPropertiesIterator, pya.LayerPropertiesNodeRef]):
+                match layer_descriptor.kind:
+                    case LayerDescriptorKind.ALL:
+                        iter = self.view.begin_layers()
+                        while not iter.at_end():
+                            lp = iter.current()
+                            incl_function(iter, lp)
+                            iter.next()
+                    case LayerDescriptorKind.NONE:
+                        iter = self.view.begin_layers()
+                        while not iter.at_end():
+                            lp = iter.current()
+                            excl_function(iter, lp)
+                            iter.next()
+                    case LayerDescriptorKind.LAYERS:
+                        iter = self.view.begin_layers()
+                        while not iter.at_end():
+                            lp = iter.current()
+                            if lp.name in layer_descriptor.layers:
+                                incl_function(iter, lp)
+                            else:
+                                excl_function(iter, lp)
+                            iter.next()
+                    case LayerDescriptorKind.LAYER_GROUPS:
+                        layer_groups = pdk_info.layer_groups(layer_descriptor.layer_groups)
+                        layer_names = {l for g in layer_groups for l in g.layers}
+                        
+                        iter = self.view.begin_layers()
+                        while not iter.at_end():
+                            lp = iter.current()
+                            if lp.name in layer_names:
+                                incl_function(iter, lp)
+                            else:
+                                excl_function(iter, lp)
+                            iter.next()
+        
+        def hide_incl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
+            lp.visible = False
+        
+        def hide_excl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
+            lp.visible = True
+        
+        def show_incl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
+            lp.visible = True
+        
+        def show_excl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
+            lp.visible = False
+            
+        def select_incl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
+            lp.selected = True
+            self.view.current_layer = iter
+            
+        def select_excl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef): 
+            pass
+
+        for action in shortcut.actions:
+            match action.kind:
+                case ActionKind.HIDE_LAYERS:
+                    apply_function(action.layers, hide_incl, hide_excl)
+                case ActionKind.SHOW_LAYERS:
+                    apply_function(action.layers, show_incl, show_excl)
+                case ActionKind.SELECT_LAYER:
+                    apply_function(action.layers, select_incl, select_excl)
+                case _:
+                    raise NotImplementedError()
+                        
+    def set_menu_for_current_tech(self):
+        if DEBUG:
+            debug("LayerShortcutPlugin.set_menu_for_current_tech")
+        
+        pdk_info = self.pdk_info_factory.pdk_info(self._tech.name)
+        
+        mw = pya.MainWindow.instance()
+        menu = mw.menu()
+        
+        menu.insert_separator("edit_menu.end", "layer_navigation_separator")
+        menu.insert_menu("edit_menu.end", "layer_navigation_group",  "Layer Navigation")
+
+        for i, s in enumerate(pdk_info.shortcuts):
+            action = pya.Action()
+            action.default_shortcut = s.key
+            action.shortcut = s.key
+            action.title = s.title
+            action.on_triggered += lambda a=action, p=pdk_info, s=s: self.trigger_shortcut(a, p, s)
+            menu.insert_item(f"edit_menu.layer_navigation_group.#{i}", f"shortcut_{i}", action)
+
+    def setup(self):
+        if DEBUG:
+            debug(f"LayerShortcutPlugin.setup, "
+                  f"for cell view {self.cell_view.cell_name}, "
+                  f"tech: {self.tech.name} "
+                  f"view_is_visible: {self.view_is_visible}")
+
+        if not self.view_is_visible:
+            return
+    
+        self._tech = self.tech
+        
+        self._layer_index_by_name = {l.name: l.layer_index() for l in self.view.each_layer()}
+
+        self.check_for_ambiguous_shortcuts()
+        self.reset_menu()
+
+    @staticmethod
+    def is_key_bound(key: str) -&gt; bool:
+        return key is not None and key != '' and key != 'none'
+
+    def all_actions_with_keybindings(self) -&gt; List[pya.Action]:
+        mw = pya.MainWindow.instance()
+        menu = mw.menu()
+        
+        def actions_with_keybindings(path: str) -&gt; List[Tuple[str, pya.Action]]:
+            actions = []
+        
+            action = menu.action(path)
+            if action and self.is_key_bound(action.effective_shortcut()):
+                actions.append((path, action))
+                
+            for subpath in menu.items(path):
+                actions += actions_with_keybindings(subpath)
+            return actions
+            
+        return actions_with_keybindings(path="")
+
+    def check_for_ambiguous_shortcuts(self):
+        pdk_info = self.pdk_info_factory.pdk_info(self._tech.name)
+        
+        configured_shortcuts: List[Tuple[str, str]] = []
+        configured_shortcut_keys: Set[str] = set()
+        for i, s in enumerate(pdk_info.shortcuts):
+            if s.key in configured_shortcuts:
+                print(f"[ERROR] in LayerShortcuts configuration for {self._tech.name}, shortcut '{s.key}' is defined multiple times")
+            configured_shortcuts.append((s.title, s.key))
+            configured_shortcut_keys.add(s.key)
+
+        conflicts: List[Tuple[str, pya.Action]] = []
+        conflict_keys: Set[str] = set()
+        
+        mw = pya.MainWindow.instance()
+        menu = mw.menu()
+        
+        for path, action in self.all_actions_with_keybindings():
+            # skip those added by this plugin
+            if path.startswith('edit_menu.layer_navigation_group.'):
+                continue
+        
+            shortcut = action.effective_shortcut()
+            if not shortcut:
+                continue
+                
+            if shortcut in configured_shortcut_keys:
+                conflicts.append((path, action))
+                conflict_keys.add(shortcut)
+        
+        if conflicts:
+            msg = "The &lt;i&gt;LayerShortcuts&lt;/i&gt; plugin wants to configure new shortcuts:&lt;br/&gt;"
+            for title, key in configured_shortcuts:
+                if key in conflict_keys:
+                    msg += "&lt;font color='red'&gt;"
+                msg += f"&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;• &lt;i&gt;{title}&lt;/i&gt; (&lt;code&gt;{key}&lt;/code&gt;)&lt;br/&gt;"
+                if key in conflict_keys:
+                    msg += "&lt;/font&gt;"
+            
+            msg += "&lt;br/&gt;Some shortcuts are already in use:&lt;br/&gt;"
+            for path, action in conflicts:
+                key = action.effective_shortcut()
+                if key in conflict_keys:
+                    msg += "&lt;font color='red'&gt;"
+                msg += f"&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;• &lt;i&gt;{action.title}&lt;/i&gt; (&lt;code&gt;{key}&lt;/code&gt;)&lt;br/&gt;"
+                if key in conflict_keys:
+                    msg += "&lt;/font&gt;"
+            msg += "&lt;br/&gt;Do you want to remove these conflicting shortcuts?"
+            
+            # Ask the user
+            reply = pya.QMessageBox.question(mw, "Shortcut Conflict", msg,
+                                             pya.QMessageBox.Yes | pya.QMessageBox.No)
+            if reply == pya.QMessageBox.Yes:
+                for path, action in conflicts:
+                    mw.set_key_bindings({path: 'none'})   # remove conflicting shortcut
+            else:
+                return  # user canceled
+            
+    def reset_menu(self):
+        self.clear_menu()
+        self.set_menu_for_current_tech()
+
+    def layout_changed(self):
+        if not self.view_is_visible:
+            return
+
+        if DEBUG:
+            debug(f"LayerShortcutPlugin.layout_changed, "
+                  f"for cell view {self.cell_view.cell_name}")
+        
+        try:
+            self.setup()
+        except Exception as e:
+            print("LayerShortcutPlugin.layout_changed caught an exception", e)
+            traceback.print_exc()        
+
+    def technology_applied(self, new_tech_name: str):
+        if not self.view_is_visible:
+            return
+            
+        if DEBUG:
+            debug(f"LayerShortcutPlugin.technology_applied, "
+                  f"for cell view {self.cell_view.cell_name}, "
+                  f"tech: {new_tech_nam}")
+        
+        if self._tech_name != new_tech_name:
+            self.setup()
+    
+    def configure(self, name: str, value: str) -&gt; bool:
+        if not self.view_is_visible:
+            return
+            
+        if DEBUG:
+            debug(f"LayerShortcutPlugin.configure, name={name}, value={value}")
+        if name == 'initial-technology':
+            self.technology_applied(value)
+        return False
+        
+
+
 class LayerShortcutsPluginFactory(pya.PluginFactory):
     def __init__(self):
         super().__init__()
+        
+        script_dir = Path(__file__).resolve().parent
+        self.pdk_info_factory = PDKInfoFactory(search_path=[script_dir / '..' / 'pdks'])
+        
         self.has_tool_entry = False
         self.add_option("klayout_layer_shortcuts_enabled", "true")
         self.add_menu_entry("Enable Plugin 'Layer Shortcuts'", "tools_menu.end")  # create separator
@@ -180,7 +464,11 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             debug(f"LayerShortcutsPluginFactory.configure, name={name}, value={value}")
         return False
   
-  
+    def create_plugin(self, manager, root, view) -&gt; pya.Plugin:
+        if DEBUG:
+            debug("LayerShortcutsPluginFactory.create_plugin")
+        return LayerShortcutsPlugin(view, pdk_info_factory=self.pdk_info_factory)
+
 LayerShortcutsPluginFactory.instance = LayerShortcutsPluginFactory()
 
 
