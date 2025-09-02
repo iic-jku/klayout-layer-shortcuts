@@ -1,0 +1,478 @@
+{
+    "tech_name": "sg13g2",
+    "layer_group_definitions": [
+        {
+            "name": "Metal1.Visible",
+            "layers": [
+                "Metal1.drawing",
+                "Metal1.pin",
+                "Metal1.text",
+                "Metal1.label",
+                "Cont.drawing",
+                "Via1.drawing"
+            ]
+        },
+        {
+            "name": "Metal1.Selected",
+            "layers": [
+                "Metal1.drawing"
+            ]
+        },
+        {
+            "name": "Metal2.Visible",
+            "layers": [
+                "Metal2.drawing",
+                "Metal2.pin",
+                "Metal2.text",
+                "Metal2.label",
+                "Via1.drawing",
+                "Via2.drawing"
+            ]
+        },
+        {
+            "name": "Metal2.Selected",
+            "layers": [
+                "Metal2.drawing"
+            ]
+        },
+        {
+            "name": "Metal3.Visible",
+            "layers": [
+                "Metal3.drawing",
+                "Metal3.pin",
+                "Metal3.text",
+                "Metal3.label",
+                "Via2.drawing",
+                "Via3.drawing"
+            ]
+        },
+        {
+            "name": "Metal3.Selected",
+            "layers": [
+                "Metal3.drawing"
+            ]
+        },
+        {
+            "name": "Metal4.Visible",
+            "layers": [
+                "Metal4.drawing",
+                "Metal4.pin",
+                "Metal4.text",
+                "Metal4.label",
+                "Via3.drawing",
+                "Via4.drawing"
+            ]
+        },
+        {
+            "name": "Metal4.Selected",
+            "layers": [
+                "Metal4.drawing"
+            ]
+        },
+        {
+            "name": "Metal5.Visible",
+            "layers": [
+                "Metal5.drawing",
+                "Metal5.pin",
+                "Metal5.text",
+                "Metal5.label",
+                "Via4.drawing",
+                "Via5.drawing"
+            ]
+        },
+        {
+            "name": "Metal5.Selected",
+            "layers": [
+                "Metal5.drawing"
+            ]
+        },
+        {
+            "name": "TopMetal1.Visible",
+            "layers": [
+                "TopMetal1.drawing",
+                "TopMetal1.pin",
+                "TopMetal1.text",
+                "TopMetal1.label",
+                "Via5.drawing",
+                "TopVia1.drawing"
+            ]
+        },
+        {
+            "name": "TopMetal1.Selected",
+            "layers": [
+                "TopMetal1.drawing"
+            ]
+        },
+        {
+            "name": "TopMetal2.Visible",
+            "layers": [
+                "TopMetal2.drawing",
+                "TopMetal2.pin",
+                "TopMetal2.text",
+                "TopMetal2.label",
+                "TopVia1.drawing"
+            ]
+        },
+        {
+            "name": "TopMetal2.Selected",
+            "layers": [
+                "TopMetal2.drawing"
+            ]
+        },
+        {
+            "name": "GatPoly.Visible",
+            "layers": [
+                "GatPoly.drawing",
+                "PolyRes.drawing",
+                "Cont.drawing"
+            ]
+        },
+        {
+            "name": "GatPoly.Selected",
+            "layers": [
+                "GatPoly.drawing"
+            ]
+        },
+        {
+            "name": "Activ.Visible",
+            "layers": [
+                "Activ.drawing",
+                "Cont.drawing",
+                "NWell.drawing",
+                "nBuLay.drawing",
+                "pSD.drawing",
+                "nSD.drawing",
+                "SalBlock.drawing",
+                "RES.drawing"
+            ]
+        },
+        {
+            "name": "Activ.Selected",
+            "layers": [
+                "Activ.drawing"
+            ]
+        }
+    ],
+    "shortcuts": [
+        {
+            "title": "Show default layers",
+            "key": "0",
+            "actions": [
+                {
+                    "kind": "reset_and_show_all_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on Metal1 layers",
+            "key": "1",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal1.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal1.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on Metal2 layers",
+            "key": "2",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal2.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal2.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on Metal3 layers",
+            "key": "3",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal3.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal3.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on Metal4 layers",
+            "key": "4",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal4.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal4.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on Metal5 layers",
+            "key": "5",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal5.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Metal5.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on TopMetal1 layers",
+            "key": "6",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "TopMetal1.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "TopMetal1.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on TopMetal2 layers",
+            "key": "7",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "TopMetal2.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "TopMetal2.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on GatPoly layers",
+            "key": "8",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "GatPoly.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "GatPoly.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on Activ layers",
+            "key": "9",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Activ.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "Activ.Selected"
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
