@@ -214,30 +214,86 @@ class LayerShortcutsPlugin(pya.Plugin):
         menu = mw.menu()
         menu.clear_menu("edit_menu.layer_navigation_group")
     
+    def select_layer(self, list_idx: int, layer: pya.LayerProperties):
+        iter = self.view.begin_layers(list_idx)
+        while not iter.at_end():
+            if iter.current().name == layer.name:
+                self.view.current_layer = iter
+                break
+            iter.next()
+    
+    def update_layer_tab(self, 
+                         name: str, 
+                         visible_layers: List[pya.LayerProperties],
+                         selected_layer: pya.LayerProperties) -&gt; int:
+        if DEBUG:
+            debug(f"LayerShortcutPlugin.update_layer_tab: {name}, "
+                  f"{len(visible_layers)} layers, selected_layer={selected_layer.name}")
+        
+        list_idx = self.view.num_layer_lists()
+
+        # TODO: find and clear existing layer list
+        # self.view.clear_layers(list_idx)
+
+        self.view.insert_layer_list(list_idx)
+        self.view.rename_layer_list(list_idx, name)
+        self.view.current_layer_list = list_idx
+
+        for l in visible_layers:
+            self.view.insert_layer(list_idx, self.view.end_layers(), l)
+    
+        # when '0' is pressed:
+        #   lv.delete_layer_list(list_idx)
+        
+    
+        # FIXME: currently, the KLayout Scripting API won't set the selection
+        #        unless we defer in the event loop
+        #        self.view.update_content()  # does also not help
+        
+        mw = pya.Application.instance().main_window()
+    
+        def on_timeout():
+            self.select_layer(list_idx, selected_layer)
+            if getattr(self, "_defer_timer", None):
+                try:
+                    self._defer_timer._destroy()
+                except RuntimeError:
+                    pass  # already deleted by Qt
+                self._defer_timer = None
+        
+        self._defer_timer = pya.QTimer(mw)
+        self._defer_timer.setSingleShot(True)
+        self._defer_timer.timeout = on_timeout
+        self._defer_timer.start(0)
+        
+        return list_idx
+    
     def trigger_shortcut(self, action: pya.Action, pdk_info: PDKInfo, shortcut: Shortcut):
         if DEBUG:
             debug(f"LayerShortcutPlugin.trigger_shortcut: {action} {action.title}")
         
-        self.view.set_config('hide-empty-layers', 'true')
+        source_list_idx = 0
+        visible_layers: List[pya.LayerProperties] = []
+        selected_layer = None
         
         def apply_function(layer_descriptor: LayerDescriptor,
                            incl_function: Callable[pya.LayerPropertiesIterator, pya.LayerPropertiesNodeRef], 
                            excl_function: Callable[pya.LayerPropertiesIterator, pya.LayerPropertiesNodeRef]):
                 match layer_descriptor.kind:
                     case LayerDescriptorKind.ALL:
-                        iter = self.view.begin_layers()
+                        iter = self.view.begin_layers(source_list_idx)
                         while not iter.at_end():
                             lp = iter.current()
                             incl_function(iter, lp)
                             iter.next()
                     case LayerDescriptorKind.NONE:
-                        iter = self.view.begin_layers()
+                        iter = self.view.begin_layers(source_list_idx)
                         while not iter.at_end():
                             lp = iter.current()
                             excl_function(iter, lp)
                             iter.next()
                     case LayerDescriptorKind.LAYERS:
-                        iter = self.view.begin_layers()
+                        iter = self.view.begin_layers(source_list_idx)
                         while not iter.at_end():
                             lp = iter.current()
                             if lp.name in layer_descriptor.layers:
@@ -249,7 +305,7 @@ class LayerShortcutsPlugin(pya.Plugin):
                         layer_groups = pdk_info.layer_groups(layer_descriptor.layer_groups)
                         layer_names = {l for g in layer_groups for l in g.layers}
                         
-                        iter = self.view.begin_layers()
+                        iter = self.view.begin_layers(source_list_idx)
                         while not iter.at_end():
                             lp = iter.current()
                             if lp.name in layer_names:
@@ -259,20 +315,20 @@ class LayerShortcutsPlugin(pya.Plugin):
                             iter.next()
         
         def hide_incl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
-            lp.visible = False
+            pass
         
         def hide_excl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
-            lp.visible = True
+            visible_layers.append(lp)
         
         def show_incl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
-            lp.visible = True
+            visible_layers.append(lp)
         
         def show_excl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
-            lp.visible = False
+            pass
             
         def select_incl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
-            lp.selected = True
-            self.view.current_layer = iter
+            nonlocal selected_layer
+            selected_layer = lp
             
         def select_excl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef): 
             pass
@@ -287,7 +343,9 @@ class LayerShortcutsPlugin(pya.Plugin):
                     apply_function(action.layers, select_incl, select_excl)
                 case _:
                     raise NotImplementedError()
-                        
+                    
+        self.update_layer_tab('LayNav', visible_layers, selected_layer)
+        
     def set_menu_for_current_tech(self):
         if DEBUG:
             debug("LayerShortcutPlugin.set_menu_for_current_tech")
