@@ -9,7 +9,6 @@
    
 This add-on can be installed through [KLayout](https://klayout.de) package manager, [see installation instructions here](#installation-instructions)
 
-
 ## Usage
 
 ### Tool activation and deactivation
@@ -18,18 +17,35 @@ This add-on can be installed through [KLayout](https://klayout.de) package manag
 
 ### Shortcuts
 
-| Shortcut | Description (What happens)       |
-|----------|----------------------------------|
-| `1`      | metal 1 drawing + pin + labels   |
-| `2`      | metal 2 drawing + pin + labels   |
-| `3`      | metal 3 drawing + pin + labels   |
-| `4`      | metal 4 drawing + pin + labels   |
-| `5`      | metal 5 drawing + pin + labels   |
-| `6`      | metal 6 drawing + pin + labels   |
-| `7`      | metal 7 drawing + pin + labels   |
-| `8`      | metal 8 drawing + pin + labels   |
-| `9`      | metal 9 drawing + pin + labels   |
+Shortcuts can be defined as action steps in the JSON configuration file.
 
+This following table describes the shortcuts of our default IHP SG13G2 configuration.
+
+| Shortcut | Description (What happens)            |
+|----------|---------------------------------------|
+| `0`      | Show default layers                   |
+| `1`      | Focus on 1st metal and related vias   |
+| `2`      | Focus on 2nd metal and related vias   |
+| `3`      | Focus on 3rd metal and related vias   |
+| `4`      | Focus on 4th metal and related vias   |
+| `5`      | Focus on 5th metal and related vias   |
+| `6`      | Focus on 6th metal and related vias   |
+| `7`      | Focus on 7th metal and related vias   |
+| `8`      | Focus on Gate Poly and related layers |
+| `9`      | Focus on Diffusion and related layers |
+
+## Supported PDKs
+
+Currently, we support the following PDKs:
+   - `IHP SG13G2`: https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/ihp-sg13g2.json
+
+You can add support for additional PDKs by writing a JSON configuration file:
+- copy [the existing JSON file](https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/ihp-sg13g2.json) and ensure the PDK name is volare/ceil compatible
+- Noters about the JSON file format
+   - NOTE: Layer names must be the same as in the KLayout layer properties XML file (e.g. `~/.volare/ihp-sg13g2/libs.tech/klayout/tech/sg13g2.lyp`)
+   - NOTE: The technology name must be the same as in the KLayout technology XML file (e.g. `~/.volare/ihp-sg13g2/libs.tech/klayout/tech/sg13g2.lyt`)
+   - NOTE: The layer group names must be unique but are completely custom
+- [create a pull request](https://github.com/iic-jku/klayout-layer-shortcuts/compare)_
 
 ## Installation using KLayout Package Manager
 
