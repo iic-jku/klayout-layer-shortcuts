@@ -230,21 +230,22 @@ class LayerShortcutsPlugin(pya.Plugin):
             debug(f"LayerShortcutPlugin.update_layer_tab: {name}, "
                   f"{len(visible_layers)} layers, selected_layer={selected_layer.name}")
         
-        list_idx = self.view.num_layer_lists()
+        list_idx = -1
+        
+        # FIXME: find and clear existing layer list, if existent
+        # list_idx = self.view.layer_list_index(name)  # THIS API function does not yet exist
+        
+        if list_idx == -1:
+            list_idx = self.view.num_layer_lists()
+            self.view.insert_layer_list(list_idx)
+            self.view.rename_layer_list(list_idx, name)
+        else:
+            self.view.clear_layers(list_idx)
 
-        # TODO: find and clear existing layer list
-        # self.view.clear_layers(list_idx)
-
-        self.view.insert_layer_list(list_idx)
-        self.view.rename_layer_list(list_idx, name)
         self.view.current_layer_list = list_idx
 
         for l in visible_layers:
             self.view.insert_layer(list_idx, self.view.end_layers(), l)
-    
-        # when '0' is pressed:
-        #   lv.delete_layer_list(list_idx)
-        
     
         # FIXME: currently, the KLayout Scripting API won't set the selection
         #        unless we defer in the event loop
@@ -267,6 +268,14 @@ class LayerShortcutsPlugin(pya.Plugin):
         self._defer_timer.start(0)
         
         return list_idx
+    
+    def remove_layer_tab(self, name: str):
+        list_idx = -1
+
+        # FIXME: find and clear existing layer list, if existent
+        # list_idx = self.view.layer_list_index(name)  # THIS API function does not yet exist
+        if list_idx != -1:
+            lv.delete_layer_list(list_idx)
     
     def trigger_shortcut(self, action: pya.Action, pdk_info: PDKInfo, shortcut: Shortcut):
         if DEBUG:
@@ -335,6 +344,10 @@ class LayerShortcutsPlugin(pya.Plugin):
 
         for action in shortcut.actions:
             match action.kind:
+                case ActionKind.RESET_AND_SHOW_ALL_LAYERS:
+                    self.remove_layer_tab('LayNav')
+                    self.view.current_layer_list = 0
+                    return
                 case ActionKind.HIDE_LAYERS:
                     apply_function(action.layers, hide_incl, hide_excl)
                 case ActionKind.SHOW_LAYERS:
