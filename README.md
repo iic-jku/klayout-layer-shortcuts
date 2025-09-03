@@ -1,7 +1,7 @@
 # KLayout Plugin: Layer Shortcuts
 
 <!--
-[![Watch the demo](doc/klayout-layer-shortcuts-screenshot-demo-video.gif)](https://youtube.com/watch/v=TODO)
+[![Watch the demo](doc/screenshot-demo-video.gif)](https://youtube.com/watch/v=TODO)
 -->
 
 * Boost your layout productivity with shortcuts 
