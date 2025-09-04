@@ -54,7 +54,7 @@ else:
             return str(self.value)
 
 
-DEBUG = True
+DEBUG = False
 
 
 def debug(*args, **kwargs):
