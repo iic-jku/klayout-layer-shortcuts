@@ -169,6 +169,20 @@
             ]
         },
         {
+            "title": "Hide default layers",
+            "key": ",",
+            "actions": [
+                {
+                    "kind": "reset_and_hid_all_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                }
+            ]
+        },
+        {
             "title": "Focus on Metal1 layers",
             "key": "1",
             "actions": [
