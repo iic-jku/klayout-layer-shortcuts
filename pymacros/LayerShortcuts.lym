@@ -54,7 +54,7 @@ else:
             return str(self.value)
 
 
-DEBUG = True
+DEBUG = False
 
 
 def debug(*args, **kwargs):
@@ -110,6 +110,7 @@ class LayerDescriptor:
 
 class ActionKind(StrEnum):
     RESET_AND_SHOW_ALL_LAYERS = 'reset_and_show_all_layers'
+    RESET_AND_HIDE_ALL_LAYERS = 'reset_and_hid_all_layers'
     HIDE_LAYERS = 'hide_layers'
     SHOW_LAYERS = 'show_layers'
     SELECT_LAYER = 'select_layers'
@@ -347,6 +348,14 @@ class LayerShortcutsPlugin(pya.Plugin):
                 case ActionKind.RESET_AND_SHOW_ALL_LAYERS:
                     self.remove_layer_tab('LayNav')
                     self.view.current_layer_list = 0
+                    for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
+                        lp.visible = True
+                    return
+                case ActionKind.RESET_AND_HIDE_ALL_LAYERS:
+                    self.remove_layer_tab('LayNav')
+                    self.view.current_layer_list = 0
+                    for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
+                        lp.visible = False
                     return
                 case ActionKind.HIDE_LAYERS:
                     apply_function(action.layers, hide_incl, hide_excl)
@@ -562,6 +571,9 @@ def dump_example_pdk_info():
     shortcuts: List[Shortcut] = [
         Shortcut(title='Show default layers', key='0', actions=[
             Action(kind=ActionKind.RESET_AND_SHOW_ALL_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL))
+        ]),
+        Shortcut(title='Hide default layers', key=',', actions=[
+            Action(kind=ActionKind.RESET_AND_HIDE_ALL_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL))
         ]),
     ]
     for i in range(1, 6):

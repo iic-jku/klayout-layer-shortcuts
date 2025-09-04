@@ -24,6 +24,7 @@ This following table describes the shortcuts of our default IHP SG13G2 configura
 | Shortcut | Description (What happens)            |
 |----------|---------------------------------------|
 | `0`      | Show default layers                   |
+| `,`      | Hide default layers                   |
 | `1`      | Focus on 1st metal and related vias   |
 | `2`      | Focus on 2nd metal and related vias   |
 | `3`      | Focus on 3rd metal and related vias   |
