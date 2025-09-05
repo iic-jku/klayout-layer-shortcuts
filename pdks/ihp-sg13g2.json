@@ -77,7 +77,7 @@
                 "Metal5.text",
                 "Metal5.label",
                 "Via4.drawing",
-                "Via5.drawing"
+                "TopVia1.drawing"
             ]
         },
         {
@@ -93,8 +93,8 @@
                 "TopMetal1.pin",
                 "TopMetal1.text",
                 "TopMetal1.label",
-                "Via5.drawing",
-                "TopVia1.drawing"
+                "TopVia1.drawing",
+                "TopVia2.drawing"
             ]
         },
         {
