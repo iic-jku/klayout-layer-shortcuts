@@ -1,0 +1,434 @@
+{
+    "tech_name": "sky130",
+    "layer_group_definitions": [
+        {
+            "name": "li1.Visible",
+            "layers": [
+                "li1.drawing",
+                "li1.pin",
+                "li1.label",
+                "licon1.drawing",
+                "mcon.drawing"
+            ]
+        },
+        {
+            "name": "li1.Selected",
+            "layers": [
+                "li1.drawing"
+            ]
+        },
+        {
+            "name": "met1.Visible",
+            "layers": [
+                "met1.drawing",
+                "met1.pin",
+                "met1.label",
+                "mcon.drawing",
+                "via.drawing"
+            ]
+        },
+        {
+            "name": "met1.Selected",
+            "layers": [
+                "met1.drawing"
+            ]
+        },
+        {
+            "name": "met2.Visible",
+            "layers": [
+                "met2.drawing",
+                "met2.pin",
+                "met2.label",
+                "via.drawing",
+                "via2.drawing"
+            ]
+        },
+        {
+            "name": "met2.Selected",
+            "layers": [
+                "met2.drawing"
+            ]
+        },
+        {
+            "name": "met3.Visible",
+            "layers": [
+                "met3.drawing",
+                "met3.pin",
+                "met3.label",
+                "via2.drawing",
+                "via3.drawing"
+            ]
+        },
+        {
+            "name": "met3.Selected",
+            "layers": [
+                "met3.drawing"
+            ]
+        },
+        {
+            "name": "met4.Visible",
+            "layers": [
+                "met4.drawing",
+                "met4.pin",
+                "met4.label",
+                "via3.drawing",
+                "via4.drawing"
+            ]
+        },
+        {
+            "name": "met4.Selected",
+            "layers": [
+                "met4.drawing"
+            ]
+        },
+        {
+            "name": "met5.Visible",
+            "layers": [
+                "met5.drawing",
+                "met5.pin",
+                "met5.label",
+                "via4.drawing"
+            ]
+        },
+        {
+            "name": "met5.Selected",
+            "layers": [
+                "met5.drawing"
+            ]
+        },
+        {
+            "name": "poly.Visible",
+            "layers": [
+                "poly.drawing",
+                "poly.res",
+                "licon1.drawing"
+            ]
+        },
+        {
+            "name": "poly.Selected",
+            "layers": [
+                "poly.drawing"
+            ]
+        },
+        {
+            "name": "diff.Visible",
+            "layers": [
+                "diff.drawing",
+                "licon1.drawing",
+                "nwell.drawing",
+                "dnwell.drawing",
+                "psdm.drawing",
+                "nsdm.drawing",
+                "diff.res"
+            ]
+        },
+        {
+            "name": "diff.Selected",
+            "layers": [
+                "diff.drawing"
+            ]
+        }
+    ],
+    "shortcuts": [
+        {
+            "title": "Show default layers",
+            "key": "0",
+            "actions": [
+                {
+                    "kind": "reset_and_show_all_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Hide default layers",
+            "key": ",",
+            "actions": [
+                {
+                    "kind": "reset_and_hid_all_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on li1 layers",
+            "key": "1",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "li1.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "li1.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on met1 layers",
+            "key": "2",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met1.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met1.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on met2 layers",
+            "key": "3",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met2.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met2.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on met3 layers",
+            "key": "4",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met3.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met3.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on met4 layers",
+            "key": "5",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met4.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met4.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on met5 layers",
+            "key": "6",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met5.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "met5.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on poly layers",
+            "key": "8",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "poly.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "poly.Selected"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Focus on diff layers",
+            "key": "9",
+            "actions": [
+                {
+                    "kind": "hide_layers",
+                    "layers": {
+                        "kind": "all",
+                        "layers": null,
+                        "layer_groups": null
+                    }
+                },
+                {
+                    "kind": "show_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "diff.Visible"
+                        ]
+                    }
+                },
+                {
+                    "kind": "select_layers",
+                    "layers": {
+                        "kind": "layer_groups",
+                        "layers": null,
+                        "layer_groups": [
+                            "diff.Selected"
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

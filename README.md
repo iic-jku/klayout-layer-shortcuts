@@ -39,6 +39,8 @@ This following table describes the shortcuts of our default IHP SG13G2 configura
 
 Currently, we support the following PDKs:
    - `IHP SG13G2`: https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/ihp-sg13g2.json
+   - Skywater `sky130`: https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/sky130.json
+   - Global Foundries `gf180mcu`: https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/gf180mcu.json
 
 You can add support for additional PDKs by writing a JSON configuration file:
 - copy [the existing JSON file](https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/ihp-sg13g2.json) and ensure the PDK name is volare/ceil compatible
