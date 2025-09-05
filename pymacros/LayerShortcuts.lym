@@ -350,12 +350,14 @@ class LayerShortcutsPlugin(pya.Plugin):
                     self.view.current_layer_list = 0
                     for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
                         lp.visible = True
+                    self.view.update_content()
                     return
                 case ActionKind.RESET_AND_HIDE_ALL_LAYERS:
                     self.remove_layer_tab('LayNav')
                     self.view.current_layer_list = 0
                     for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
                         lp.visible = False
+                    self.view.update_content()
                     return
                 case ActionKind.HIDE_LAYERS:
                     apply_function(action.layers, hide_incl, hide_excl)
