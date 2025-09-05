@@ -167,33 +167,95 @@ class PDKInfoFactory:
             
 #--------------------------------------------------------------------------------
 
-class LayerShortcutsPlugin(pya.Plugin):
-    def __init__(self, view: pya.LayoutView, pdk_info_factory: PDKInfoFactory):
-        if DEBUG:
-            debug("LayerShortcutPlugin.ctor")
-            
-        super().__init__()
-        self.view = view
-        self.pdk_info_factory = pdk_info_factory
-        
-        self._tech = None
-        self._layer_index_by_name: Dict[str, int] = {}
 
+class LayerShortcutsPluginFactory(pya.PluginFactory):
+    def __init__(self):
+        super().__init__()
+                
+        try:
+            script_dir = Path(__file__).resolve().parent
+            self.pdk_info_factory = PDKInfoFactory(search_path=[script_dir / '..' / 'pdks'])
+            
+            self.has_tool_entry = False
+            self.register(-1000, "layer_shortcuts", "Layer Shortcuts")
+        except Exception as e:
+            print("LayerShortcutsPluginFactory.ctor caught an exception", e)
+            traceback.print_exc()
+        
+    @classmethod
+    def defer(cls, callable: Callable):
+        # NOTE: if we directly call the Editor Options menu action
+        #       the GUI immediately will switch back to the Librariew view
+        #       so we enqueue it into the event loop
+
+        mw = pya.Application.instance().main_window()
+    
+        def on_timeout():
+            try:
+                callable()
+            except Exception as e:
+                print("LayerShortcutsPluginFactory.defer():on_timeout() caught an exception", e)
+                traceback.print_exc()
+        
+            if getattr(cls, "_defer_timer", None):
+                try:
+                    cls._defer_timer._destroy()
+                except RuntimeError:
+                    pass  # already deleted by Qt
+                cls._defer_timer = None
+        
+        cls._defer_timer = pya.QTimer(mw)
+        cls._defer_timer.setSingleShot(True)
+        cls._defer_timer.timeout = on_timeout
+        cls._defer_timer.start(0)
+        
+    def on_current_view_changed(self):
+        if DEBUG:
+             debug(f"LayerShortcutsPluginFactory.on_current_view_changed, self.view={self.view}, "
+                   f"active cell name={self.cell_view.cell_name}")
+        
         try:
             if self.layout is None:
                 if DEBUG:
-                    debug("LayerShortcutPlugin.ctor: no layout yet, register callback")
-
-                view.on_file_open.connect(self.layout_changed)
+                    debug("LayerShortcutPlugin.on_current_view_changed: no layout yet, register callback")
+                self.view.on_file_open.connect(self.layout_changed)
             else:
-                self.setup()
+                self.layout_changed()
         except Exception as e:
-            print("LayerShortcutPlugin.ctor caught an exception", e)
+            print("LayerShortcutsPluginFactory.on_current_view_changed caught an exception", e)
             traceback.print_exc()
         
+
+    def on_view_created(self):
+        if DEBUG:
+             debug("LayerShortcutsPluginFactory.on_view_created")
+
+    def on_view_closed(self):
+        if DEBUG:
+             debug("LayerShortcutsPluginFactory.on_view_closed")
+      
+    def menu_activated(self, symbol: str) -&gt; bool:
+        if DEBUG:
+            debug(f"LayerShortcutsPluginFactory.menu_activated: symbol={symbol}")
+            
+        if symbol == 'technology_selector:apply_technology':
+            if DEBUG:
+                debug(f"LayerShortcutsPluginFactory.menu_activated: "
+                      f"pya.CellView.active().technology().name={pya.CellView.active().technology} (NOTE: old, that's why we need defer)")
+            # NOTE: we have to defer, otherwise the CellView won't have the new tech yet
+            self.defer(self.technology_applied)
+            
+    def on_active_cellview_changed(self) -&gt; bool:
+        if DEBUG:
+            debug(f"LayerShortcutsPluginFactory.on_active_cellview_changed: {self.cell_view.cell_name}")
+            
+    @property
+    def view(self) -&gt; pya.LayoutView:
+        return pya.LayoutView.current()
+            
     @property
     def cell_view(self) -&gt; pya.CellView:
-        return self.view.active_cellview()
+        return pya.CellView.active()
 
     @property
     def layout(self) -&gt; pya.Layout:
@@ -203,13 +265,9 @@ class LayerShortcutsPlugin(pya.Plugin):
     def tech(self) -&gt; pya.Technology:
         return self.layout.technology()
 
-    @property
-    def view_is_visible(self) -&gt; bool:
-        return self.view.widget().isVisible()
-
     def clear_menu(self):
         if DEBUG:
-            debug("LayerShortcutPlugin.clear_menu")
+            debug("LayerShortcutsPluginFactory.clear_menu")
                 
         mw = pya.MainWindow.instance()
         menu = mw.menu()
@@ -226,10 +284,10 @@ class LayerShortcutsPlugin(pya.Plugin):
     def update_layer_tab(self, 
                          name: str, 
                          visible_layers: List[pya.LayerProperties],
-                         selected_layer: pya.LayerProperties) -&gt; int:
+                         selected_layer: Optional[pya.LayerProperties]) -&gt; int:
         if DEBUG:
-            debug(f"LayerShortcutPlugin.update_layer_tab: {name}, "
-                  f"{len(visible_layers)} layers, selected_layer={selected_layer.name}")
+            debug(f"LayerShortcutsPluginFactory.update_layer_tab: {name}, "
+                  f"{len(visible_layers)} layers, selected_layer={selected_layer.name if selected_layer else 'none'}")
         
         list_idx = -1
         
@@ -248,25 +306,26 @@ class LayerShortcutsPlugin(pya.Plugin):
         for l in visible_layers:
             self.view.insert_layer(list_idx, self.view.end_layers(), l)
     
-        # FIXME: currently, the KLayout Scripting API won't set the selection
-        #        unless we defer in the event loop
-        #        self.view.update_content()  # does also not help
+        if selected_layer is not None:
+            # FIXME: currently, the KLayout Scripting API won't set the selection
+            #        unless we defer in the event loop
+            #        self.view.update_content()  # does also not help
+            
+            mw = pya.Application.instance().main_window()
         
-        mw = pya.Application.instance().main_window()
-    
-        def on_timeout():
-            self.select_layer(list_idx, selected_layer)
-            if getattr(self, "_defer_timer", None):
-                try:
-                    self._defer_timer._destroy()
-                except RuntimeError:
-                    pass  # already deleted by Qt
-                self._defer_timer = None
-        
-        self._defer_timer = pya.QTimer(mw)
-        self._defer_timer.setSingleShot(True)
-        self._defer_timer.timeout = on_timeout
-        self._defer_timer.start(0)
+            def on_timeout():
+                self.select_layer(list_idx, selected_layer)
+                if getattr(self, "_defer_timer", None):
+                    try:
+                        self._defer_timer._destroy()
+                    except RuntimeError:
+                        pass  # already deleted by Qt
+                    self._defer_timer = None
+            
+            self._defer_timer = pya.QTimer(mw)
+            self._defer_timer.setSingleShot(True)
+            self._defer_timer.timeout = on_timeout
+            self._defer_timer.start(0)
         
         return list_idx
     
@@ -280,7 +339,7 @@ class LayerShortcutsPlugin(pya.Plugin):
     
     def trigger_shortcut(self, action: pya.Action, pdk_info: PDKInfo, shortcut: Shortcut):
         if DEBUG:
-            debug(f"LayerShortcutPlugin.trigger_shortcut: {action} {action.title}")
+            debug(f"LayerShortcutsPluginFactory.trigger_shortcut: {action} {action.title}")
         
         source_list_idx = 0
         visible_layers: List[pya.LayerProperties] = []
@@ -372,9 +431,12 @@ class LayerShortcutsPlugin(pya.Plugin):
         
     def set_menu_for_current_tech(self):
         if DEBUG:
-            debug("LayerShortcutPlugin.set_menu_for_current_tech")
+            debug(f"LayerShortcutsPluginFactory.set_menu_for_current_tech, tech {self.tech.name}")
         
-        pdk_info = self.pdk_info_factory.pdk_info(self._tech.name)
+        pdk_info = self.pdk_info_factory.pdk_info(self.tech.name)
+        if pdk_info is None:
+            print(f"ERROR: no PDK info found for tech {self.tech.name}")
+            return
         
         mw = pya.MainWindow.instance()
         menu = mw.menu()
@@ -391,21 +453,18 @@ class LayerShortcutsPlugin(pya.Plugin):
             menu.insert_item(f"edit_menu.layer_navigation_group.#{i}", f"shortcut_{i}", action)
 
     def setup(self):
-        if DEBUG:
-            debug(f"LayerShortcutPlugin.setup, "
-                  f"for cell view {self.cell_view.cell_name}, "
-                  f"tech: {self.tech.name} "
-                  f"view_is_visible: {self.view_is_visible}")
-
-        if not self.view_is_visible:
-            return
+        try:
+            if DEBUG:
+                debug(f"LayerShortcutsPluginFactory.setup, "
+                      f"for cell view {self.cell_view.cell_name}, "
+                      f"tech: {self.tech.name}, "
+                      f"self.tech.name: {self.tech.name}")
     
-        self._tech = self.tech
-        
-        self._layer_index_by_name = {l.name: l.layer_index() for l in self.view.each_layer()}
-
-        self.check_for_ambiguous_shortcuts()
-        self.reset_menu()
+            self.check_for_ambiguous_shortcuts()
+            self.reset_menu()
+        except Exception as e:
+            print("LayerShortcutsPluginFactory.setup caught an exception", e)
+            traceback.print_exc()            
 
     @staticmethod
     def is_key_bound(key: str) -&gt; bool:
@@ -429,13 +488,16 @@ class LayerShortcutsPlugin(pya.Plugin):
         return actions_with_keybindings(path="")
 
     def check_for_ambiguous_shortcuts(self):
-        pdk_info = self.pdk_info_factory.pdk_info(self._tech.name)
+        pdk_info = self.pdk_info_factory.pdk_info(self.tech.name)
+        if pdk_info is None:
+            print(f"ERROR: no PDK info found for tech {self.tech.name}")
+            return
         
         configured_shortcuts: List[Tuple[str, str]] = []
         configured_shortcut_keys: Set[str] = set()
         for i, s in enumerate(pdk_info.shortcuts):
             if s.key in configured_shortcuts:
-                print(f"[ERROR] in LayerShortcuts configuration for {self._tech.name}, shortcut '{s.key}' is defined multiple times")
+                print(f"[ERROR] in LayerShortcuts configuration for {self.tech.name}, shortcut '{s.key}' is defined multiple times")
             configured_shortcuts.append((s.title, s.key))
             configured_shortcut_keys.add(s.key)
 
@@ -491,67 +553,63 @@ class LayerShortcutsPlugin(pya.Plugin):
         self.set_menu_for_current_tech()
 
     def layout_changed(self):
-        if not self.view_is_visible:
-            return
-
         if DEBUG:
-            debug(f"LayerShortcutPlugin.layout_changed, "
+            debug(f"LayerShortcutsPluginFactory.layout_changed, "
                   f"for cell view {self.cell_view.cell_name}")
         
         try:
             self.setup()
+            
+            self.view.on_active_cellview_changed += self.on_active_cellview_changed
         except Exception as e:
-            print("LayerShortcutPlugin.layout_changed caught an exception", e)
+            print("LayerShortcutsPluginFactory.layout_changed caught an exception", e)
             traceback.print_exc()        
 
-    def technology_applied(self, new_tech_name: str):
-        if not self.view_is_visible:
-            return
-            
+    def technology_applied(self):
+        new_tech_name = pya.CellView.active().technology
         if DEBUG:
-            debug(f"LayerShortcutPlugin.technology_applied, "
+            debug(f"LayerShortcutsPluginFactory.technology_applied, "
                   f"for cell view {self.cell_view.cell_name}, "
-                  f"tech: {new_tech_nam}")
-        
-        if self._tech_name != new_tech_name:
-            self.setup()
-    
-    def configure(self, name: str, value: str) -&gt; bool:
-        if not self.view_is_visible:
-            return
+                  f"tech: {new_tech_name}")
             
-        if DEBUG:
-            debug(f"LayerShortcutPlugin.configure, name={name}, value={value}")
-        if name == 'initial-technology':
-            self.technology_applied(value)
-        return False
-        
-
-
-class LayerShortcutsPluginFactory(pya.PluginFactory):
-    def __init__(self):
-        super().__init__()
-        
-        script_dir = Path(__file__).resolve().parent
-        self.pdk_info_factory = PDKInfoFactory(search_path=[script_dir / '..' / 'pdks'])
-        
-        self.has_tool_entry = False
-        self.add_option("klayout_layer_shortcuts_enabled", "true")
-        self.add_menu_entry("Enable Plugin 'Layer Shortcuts'", "tools_menu.end")  # create separator
-        self.add_config_menu_item("klayout_layer_shortcuts.enabled", "tools_menu.end", "Enable Plugin 'Layer Shortcuts'", "klayout_layer_shortcuts_enabled", "?")
-        self.register(-1000, "layer_shortcuts", "Layer Shortcuts")
-  
+        try:
+            self.setup()
+            # NOTE: this configure-triggered event is sometimes called before the tech 
+            #       of the layout really is updated, so we defer this in the event loop
+            ## self.defer(self.setup)
+        except Exception as e:
+            print("LayerShortcutsPluginFactory.technology_applied caught an exception", e)
+            traceback.print_exc()        
+    
     def configure(self, name: str, value: str) -&gt; bool:
         if DEBUG:
             debug(f"LayerShortcutsPluginFactory.configure, name={name}, value={value}")
+            
+        if name == 'initial-technology':
+            self.defer(self.technology_applied)
+            
         return False
-  
-    def create_plugin(self, manager, root, view) -&gt; pya.Plugin:
-        if DEBUG:
-            debug("LayerShortcutsPluginFactory.create_plugin")
-        return LayerShortcutsPlugin(view, pdk_info_factory=self.pdk_info_factory)
+            
 
-LayerShortcutsPluginFactory.instance = LayerShortcutsPluginFactory()
+def on_current_view_changed():
+    if DEBUG:
+        debug(f"(GLOBAL) on_current_view_changed")
+    inst = LayerShortcutsPluginFactory.instance
+    inst.defer(inst.on_current_view_changed)
+    
+def on_view_created():
+    if DEBUG:
+        debug("(GLOBAL) on_view_created")
+    # LayerShortcutsPluginFactory.instance.on_view_created()
+    inst = LayerShortcutsPluginFactory.instance
+    inst.defer(inst.on_view_created)
+
+def on_view_closed():
+    if DEBUG:
+        debug("(GLOBAL) on_view_closed")
+    # LayerShortcutsPluginFactory.instance.on_view_closed()
+    inst = LayerShortcutsPluginFactory.instance
+    inst.defer(inst.on_view_closed)
 
 
 #--------------------------------------------------------------------------------
@@ -632,8 +690,19 @@ def test_parse():
     for pi in f.pdk_infos_by_tech_name.values():
         json.dump(asdict(pi), sys.stdout, indent=4)
 
+#--------------------------------------------------------------------------------
 
 # dump_example_pdk_info()
 # test_parse()
+
+LayerShortcutsPluginFactory.instance = LayerShortcutsPluginFactory()
+
+# NOTE: need to keep an instance currently.
+# (will be fixed in 0.30.4, so we can pull a temporary instance)
+mw = pya.MainWindow.instance()
+
+mw.on_current_view_changed += on_current_view_changed
+mw.on_view_created += on_view_created
+mw.on_view_closed += on_view_closed
 </text>
 </klayout-macro>
