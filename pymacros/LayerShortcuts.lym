@@ -159,8 +159,8 @@ class PDKInfoFactory:
             try:
                 pdk_info = PDKInfo.read_json(f)
                 self._pdk_infos_by_tech_name[pdk_info.tech_name] = pdk_info
-            except:
-                print(f"Failed to parse PDK info file {f}, skipping this file…")
+            except Exception as e:
+                print(f"Failed to parse PDK info file {f}, skipping this file…", e)
                 
     def pdk_info(self, tech_name: str) -&gt; Optional[PDKInfo]:
         return self._pdk_infos_by_tech_name.get(tech_name, None)
