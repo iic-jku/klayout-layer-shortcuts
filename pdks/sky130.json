@@ -4,128 +4,129 @@
         {
             "name": "li1.Visible",
             "layers": [
-                "li1.drawing",
-                "li1.pin",
-                "li1.label",
-                "licon1.drawing",
-                "mcon.drawing"
+                "li1.drawing - 67/20",
+                "li1.pin - 67/16",
+                "li1.label - 67/5",
+                "licon1.drawing - 66/44",
+                "mcon.drawing - 67/44"
             ]
         },
         {
             "name": "li1.Selected",
             "layers": [
-                "li1.drawing"
+                "li1.drawing - 67/20"
             ]
         },
         {
             "name": "met1.Visible",
             "layers": [
-                "met1.drawing",
-                "met1.pin",
-                "met1.label",
-                "mcon.drawing",
-                "via.drawing"
+                "met1.drawing - 68/20",
+                "met1.pin - 68/16",
+                "met1.label - 68/5",
+                "mcon.drawing - 67/44",
+                "via.drawing - 68/44"
             ]
         },
         {
             "name": "met1.Selected",
             "layers": [
-                "met1.drawing"
+                "met1.drawing - 68/20"
             ]
         },
         {
             "name": "met2.Visible",
             "layers": [
-                "met2.drawing",
-                "met2.pin",
-                "met2.label",
-                "via.drawing",
-                "via2.drawing"
+                "met2.drawing - 69/20",
+                "met2.pin - 69/16",
+                "met2.label - 69/5",
+                "via.drawing - 68/44",
+                "via2.drawing - 69/44"
             ]
         },
         {
             "name": "met2.Selected",
             "layers": [
-                "met2.drawing"
+                "met2.drawing - 69/20"
             ]
         },
         {
             "name": "met3.Visible",
             "layers": [
-                "met3.drawing",
-                "met3.pin",
-                "met3.label",
-                "via2.drawing",
-                "via3.drawing"
+                "met3.drawing - 70/20",
+                "met3.pin - 70/16",
+                "met3.label - 70/5",
+                "via2.drawing - 69/44",
+                "via3.drawing - 70/44"
             ]
         },
         {
             "name": "met3.Selected",
             "layers": [
-                "met3.drawing"
+                "met3.drawing - 70/20"
             ]
         },
         {
             "name": "met4.Visible",
             "layers": [
-                "met4.drawing",
-                "met4.pin",
-                "met4.label",
-                "via3.drawing",
-                "via4.drawing"
+                "met4.drawing - 71/20",
+                "met4.pin - 71/16",
+                "met4.label - 71/5",
+                "via3.drawing - 70/44",
+                "via4.drawing - 71/44"
             ]
         },
         {
             "name": "met4.Selected",
             "layers": [
-                "met4.drawing"
+                "met4.drawing - 71/20"
             ]
         },
         {
             "name": "met5.Visible",
             "layers": [
-                "met5.drawing",
-                "met5.pin",
-                "met5.label",
-                "via4.drawing"
+                "met5.drawing - 72/20",
+                "met5.pin - 72/16",
+                "met5.label - 72/5",
+                "via4.drawing - 71/44"
             ]
         },
         {
             "name": "met5.Selected",
             "layers": [
-                "met5.drawing"
+                "met5.drawing - 72/20"
             ]
         },
         {
             "name": "poly.Visible",
             "layers": [
-                "poly.drawing",
-                "poly.res",
-                "licon1.drawing"
+                "poly.drawing - 66/20",
+                "poly.pin - 66/16",
+                "poly.res - 66/13",
+                "licon1.drawing - 66/44"
             ]
         },
         {
             "name": "poly.Selected",
             "layers": [
-                "poly.drawing"
+                "poly.drawing - 66/20"
             ]
         },
         {
             "name": "diff.Visible",
             "layers": [
-                "diff.drawing",
-                "licon1.drawing",
-                "nwell.drawing",
-                "dnwell.drawing",
-                "psdm.drawing",
-                "nsdm.drawing",
-                "diff.res"
+                "diff.drawing - 65/20",
+                "licon1.drawing - 66/44",
+                "nwell.drawing - 64/20",
+                "dnwell.drawing - 64/18",
+                "psdm.drawing - 94/20",
+                "nsdm.drawing - 93/44",
+                "diff.res - 65/13"
             ]
         },
         {
             "name": "diff.Selected",
             "layers": [
-                "diff.drawing"
+                "diff.drawing - 65/20"
             ]
         }
     ],
