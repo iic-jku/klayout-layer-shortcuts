@@ -298,25 +298,41 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                 break
             iter.next()
     
-    def update_layer_tab(self, 
-                         name: str, 
-                         visible_layers: List[pya.LayerProperties],
-                         selected_layer: Optional[pya.LayerProperties]) -&gt; int:
+    def layer_list_index_for_tab_name(self, name: str) -&gt; int:
+        lv: pya.LayoutView = self.view
+        if 'layer_list_name' in dir(lv):  # Only KLayout &gt;=0.30.4 supports LayerView.layer_list_name()!
+            for attempt in range(0, 3):
+                names = []
+                for i in range(0, lv.num_layer_lists()):
+                    list_name = lv.layer_list_name(i)
+                    if name == list_name:  # THIS API function
+                        return i
+                    names.append(list_name)
+                if DEBUG:
+                    debug(f"LayerShortcutsPluginFactory.layer_list_index_for_tab_name: {name}, "
+                          f"could not find a layer, names were: {names} (attempt #{attempt})")
+            
+        return -1
+    
+    def update_layer_list(self, 
+                          name: str, 
+                          visible_layers: List[pya.LayerProperties],
+                          selected_layer: Optional[pya.LayerProperties]) -&gt; int:
         if DEBUG:
-            debug(f"LayerShortcutsPluginFactory.update_layer_tab: {name}, "
+            debug(f"LayerShortcutsPluginFactory.update_layer_list: {name}, "
                   f"{len(visible_layers)} layers, selected_layer={selected_layer.name if selected_layer else 'none'}")
         
-        list_idx = -1
-        
-        # FIXME: find and clear existing layer list, if existent
-        # list_idx = self.view.layer_list_index(name)  # THIS API function does not yet exist
+        list_idx = self.layer_list_index_for_tab_name(name)
         
         if list_idx == -1:
             list_idx = self.view.num_layer_lists()
             self.view.insert_layer_list(list_idx)
             self.view.rename_layer_list(list_idx, name)
         else:
+            # NOTE: as of KLayout 0.30.3, clear_layers() also deletes the name of the layer list tab!
+            #       this will be fixed above 0.30.4, but as a workaround we will always re-set the name!
             self.view.clear_layers(list_idx)
+            self.view.rename_layer_list(list_idx, name)
 
         self.view.current_layer_list = list_idx
 
@@ -346,13 +362,14 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         
         return list_idx
     
-    def remove_layer_tab(self, name: str):
-        list_idx = -1
-
-        # FIXME: find and clear existing layer list, if existent
-        # list_idx = self.view.layer_list_index(name)  # THIS API function does not yet exist
+    def remove_layer_list(self, name: str):
+        list_idx = self.layer_list_index_for_tab_name(name)
         if list_idx != -1:
-            lv.delete_layer_list(list_idx)
+            self.view.delete_layer_list(list_idx)
+        else:
+            if DEBUG:
+                debug(f"LayerShortcutsPluginFactory.remove_layer_list: no tab list found for name {name}")
+        
     
     def trigger_shortcut(self, action: pya.Action, pdk_info: PDKInfo, shortcut: Shortcut):
         if DEBUG:
@@ -425,15 +442,15 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         for action in shortcut.actions:
             match action.kind:
                 case ActionKind.RESET_AND_SHOW_ALL_LAYERS:
-                    self.remove_layer_tab('LayNav')
                     self.view.current_layer_list = 0
+                    self.remove_layer_list('LayNav')
                     for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
                         lp.visible = True
                     self.view.update_content()
                     return
                 case ActionKind.RESET_AND_HIDE_ALL_LAYERS:
-                    self.remove_layer_tab('LayNav')
                     self.view.current_layer_list = 0
+                    self.remove_layer_list('LayNav')
                     for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
                         lp.visible = False
                     self.view.update_content()
@@ -447,7 +464,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                 case _:
                     raise NotImplementedError()
                     
-        self.update_layer_tab('LayNav', visible_layers, selected_layer)
+        self.update_layer_list('LayNav', visible_layers, selected_layer)
         
     def set_menu_for_current_tech(self):
         if DEBUG:
