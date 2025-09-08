@@ -4,127 +4,129 @@
         {
             "name": "Metal1.Visible",
             "layers": [
-                "Metal1",
-                "Metal1_Dummy",
-                "Metal1_Res",
-                "Contact",
-                "Via1"
+                "Metal1 34/0@1",
+                "Metal1_Dummy 34/4@1",
+                "Metal1_Res 110/11@1",
+                "Contact 33/0@1",
+                "Via1 35/0@1"
             ]
         },
         {
             "name": "Metal1.Selected",
             "layers": [
-                "Metal1"
+                "Metal1 34/0@1"
             ]
         },
         {
             "name": "Metal2.Visible",
             "layers": [
-                "Metal2",
-                "Metal2_Dummy",
-                "Metal2_Res",
-                "Via1",
-                "Via2"
+                "Metal2 36/0@1",
+                "Metal2_Dummy 36/4@1",
+                "Metal2_Res 110/12@1",
+                "Via1 35/0@1",
+                "Via2 38/0@1"
             ]
         },
         {
             "name": "Metal2.Selected",
             "layers": [
-                "Metal2"
+                "Metal2 36/0@1"
             ]
         },
         {
             "name": "Metal3.Visible",
             "layers": [
-                "Metal3",
-                "Metal3_Dummy",
-                "Metal3_Res",
-                "Via2",
-                "Via3"
+                "Metal3 42/0@1",
+                "Metal3_Dummy 42/4@1",
+                "Metal3_Res 110/13@1",
+                "Via2 38/0@1",
+                "Via3 40/0@1"
             ]
         },
         {
             "name": "Metal3.Selected",
             "layers": [
-                "Metal3"
+                "Metal3 42/0@1"
             ]
         },
         {
             "name": "Metal4.Visible",
             "layers": [
-                "Metal4",
-                "Metal4_Dummy",
-                "Metal4_Res",
-                "Via3",
-                "Via4"
+                "Metal4 46/0@1",
+                "Metal4_Dummy 46/4@1",
+                "Metal4_Res 110/14@1",
+                "Via3 40/0@1",
+                "Via4 41/0@1"
             ]
         },
         {
             "name": "Metal4.Selected",
             "layers": [
-                "Metal4"
+                "Metal4 46/0@1"
             ]
         },
         {
             "name": "Metal5.Visible",
             "layers": [
-                "Metal5",
-                "Metal5_Dummy",
-                "Metal5_Res",
-                "Via4",
-                "Via5"
+                "Metal5 81/0@1",
+                "Metal5_Dummy 81/4@1",
+                "Metal5_Res 110/15@1",
+                "Via4 41/0@1",
+                "Via5 82/0@1"
             ]
         },
         {
             "name": "Metal5.Selected",
             "layers": [
-                "Metal5"
+                "Metal5 81/0@1"
             ]
         },
         {
             "name": "MetalTop.Visible",
             "layers": [
-                "MetalTop",
-                "MetalTop_Dummy",
-                "Metal6_Res",
-                "Via5"
+                "MetalTop 53/0@1",
+                "MetalTop_Dummy 53/4@1",
+                "Metal6_Res 110/16@1",
+                "Via5 82/0@1"
             ]
         },
         {
             "name": "MetalTop.Selected",
             "layers": [
-                "MetalTop"
+                "MetalTop 53/0@1"
             ]
         },
         {
             "name": "Poly.Visible",
             "layers": [
-                "Poly2",
-                "Contact"
+                "Poly2 30/0@1",
+                "Contact 33/0@1"
             ]
         },
         {
             "name": "Poly.Selected",
             "layers": [
-                "Poly2"
+                "Poly2 30/0@1"
             ]
         },
         {
             "name": "COMP.Visible",
             "layers": [
-                "COMP",
-                "Nwell",
-                "DNWELL",
-                "LVPWELL",
-                "Nplus",
-                "Pplus",
-                "Resistor"
+                "COMP 22/0@1",
+                "COMP_Dummy 22/4@1",
+                "Nwell 21/0@1",
+                "DNWELL 12/0@1",
+                "LVPWELL 204/0@1",
+                "Nplus 32/0@1",
+                "Pplus 31/0@1",
+                "Resistor 62/0@1",
+                "Contact 33/0@1"
             ]
         },
         {
             "name": "COMP.Selected",
             "layers": [
-                "COMP"
+                "COMP 22/0@1"
             ]
         }
     ],

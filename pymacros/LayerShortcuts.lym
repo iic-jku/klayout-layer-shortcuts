@@ -213,7 +213,10 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         if DEBUG:
              debug(f"LayerShortcutsPluginFactory.on_current_view_changed, self.view={self.view}, "
                    f"active cell name={self.cell_view.cell_name}")
-        
+
+        if self.view is None:
+            return
+
         try:
             if self.layout is None:
                 if DEBUG:
@@ -377,7 +380,10 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                         iter = self.view.begin_layers(source_list_idx)
                         while not iter.at_end():
                             lp = iter.current()
-                            if lp.name in layer_names:
+                            lname = lp.name or lp.source
+                            if lname is None:
+                                continue
+                            if lname in layer_names:
                                 incl_function(iter, lp)
                             else:
                                 excl_function(iter, lp)
