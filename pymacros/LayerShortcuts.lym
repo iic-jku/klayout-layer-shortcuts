@@ -213,7 +213,10 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         if DEBUG:
              debug(f"LayerShortcutsPluginFactory.on_current_view_changed, self.view={self.view}, "
                    f"active cell name={self.cell_view.cell_name}")
-        
+
+        if self.view is None:
+            return
+
         try:
             if self.layout is None:
                 if DEBUG:
