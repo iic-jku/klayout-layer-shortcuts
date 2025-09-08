@@ -173,6 +173,8 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         super().__init__()
                 
         try:
+            self._in_conflicting_shortcut_dialog = False
+
             script_dir = Path(__file__).resolve().parent
             self.pdk_info_factory = PDKInfoFactory(search_path=[script_dir / '..' / 'pdks'])
             
@@ -211,8 +213,9 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         
     def on_current_view_changed(self):
         if DEBUG:
+             debug(f"LayerShortcutsPluginFactory.on_current_view_changed, self.view={self.view}")
              debug(f"LayerShortcutsPluginFactory.on_current_view_changed, self.view={self.view}, "
-                   f"active cell name={self.cell_view.cell_name}")
+                   f"active cell name={'none' if self.cell_view is None else self.cell_view.cell_name}")
 
         if self.view is None:
             return
@@ -228,10 +231,21 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             print("LayerShortcutsPluginFactory.on_current_view_changed caught an exception", e)
             traceback.print_exc()
         
-
     def on_view_created(self):
         if DEBUG:
-             debug("LayerShortcutsPluginFactory.on_view_created")
+             debug(f"LayerShortcutsPluginFactory.on_view_created, self.view={self.view}, "
+                   f"active cell name={'none' if self.cell_view is None else self.cell_view.cell_name}")
+
+        # NOTE: sometimes when starting klayout -e directly with a layout file
+        #       on_current_view_changed won't get emitted
+        mw = pya.MainWindow.instance()
+        menu = mw.menu()
+        if not menu.is_menu("edit_menu.layer_navigation_group"):
+            if DEBUG:
+                debug(f"LayerShortcutsPluginFactory.on_view_created, no menu found yet, "
+                      f"seems we are in a startup situation, "
+                      f"so we'll create the menu now")
+            self.setup()
 
     def on_view_closed(self):
         if DEBUG:
@@ -459,6 +473,12 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             menu.insert_item(f"edit_menu.layer_navigation_group.#{i}", f"shortcut_{i}", action)
 
     def setup(self):
+        if self._in_conflicting_shortcut_dialog:
+            if DEBUG:
+                debug(f"LayerShortcutsPluginFactory.setup, "
+                      f"conflicting shortcut dialog already displayed, early exit")
+            return
+          
         try:
             if DEBUG:
                 debug(f"LayerShortcutsPluginFactory.setup, "
@@ -546,13 +566,17 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             msg += "&lt;br/&gt;Do you want to remove these conflicting shortcuts?"
             
             # Ask the user
-            reply = pya.QMessageBox.question(mw, "Shortcut Conflict", msg,
-                                             pya.QMessageBox.Yes | pya.QMessageBox.No)
-            if reply == pya.QMessageBox.Yes:
-                for path, action in conflicts:
-                    mw.set_key_bindings({path: 'none'})   # remove conflicting shortcut
-            else:
-                return  # user canceled
+            try:
+                self._in_conflicting_shortcut_dialog = True
+                reply = pya.QMessageBox.question(mw, "Shortcut Conflict", msg,
+                                                 pya.QMessageBox.Yes | pya.QMessageBox.No)
+                if reply == pya.QMessageBox.Yes:
+                    for path, action in conflicts:
+                        mw.set_key_bindings({path: 'none'})   # remove conflicting shortcut
+                else:
+                    pass  # user canceled
+            finally:
+                self._in_conflicting_shortcut_dialog = False
             
     def reset_menu(self):
         self.clear_menu()
@@ -598,24 +622,35 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             
 
 def on_current_view_changed():
-    if DEBUG:
-        debug(f"(GLOBAL) on_current_view_changed")
-    inst = LayerShortcutsPluginFactory.instance
-    inst.defer(inst.on_current_view_changed)
+    try:
+      if DEBUG:
+          debug(f"(GLOBAL) on_current_view_changed")
+      inst = LayerShortcutsPluginFactory.instance
+      inst.defer(inst.on_current_view_changed)
+    except Exception as e:
+        print("(GLOBAL) on_current_view_changed caught an exception", e)
+        traceback.print_exc()
     
 def on_view_created():
-    if DEBUG:
-        debug("(GLOBAL) on_view_created")
-    # LayerShortcutsPluginFactory.instance.on_view_created()
-    inst = LayerShortcutsPluginFactory.instance
-    inst.defer(inst.on_view_created)
+    try:
+      if DEBUG:
+          debug("(GLOBAL) on_view_created")
+      inst = LayerShortcutsPluginFactory.instance
+      inst.defer(inst.on_view_created)
+    except Exception as e:
+        print("(GLOBAL) on_view_created caught an exception", e)
+        traceback.print_exc()
+
 
 def on_view_closed():
-    if DEBUG:
-        debug("(GLOBAL) on_view_closed")
-    # LayerShortcutsPluginFactory.instance.on_view_closed()
-    inst = LayerShortcutsPluginFactory.instance
-    inst.defer(inst.on_view_closed)
+    try:
+      if DEBUG:
+          debug("(GLOBAL) on_view_closed")
+      inst = LayerShortcutsPluginFactory.instance
+      inst.defer(inst.on_view_closed)
+    except Exception as e:
+        print("(GLOBAL) on_view_closed caught an exception", e)
+        traceback.print_exc()
 
 
 #--------------------------------------------------------------------------------
