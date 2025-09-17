@@ -12,6 +12,11 @@
  <license>GPLv3</license>
  <author>Martin Jan Köhler</author>
  <author-contact/>
+ <depends>
+  <name>KLayoutPluginUtils</name>
+  <url/>
+  <version>0.2</version>
+ </depends>
  <authored-time/>
  <installed-time></installed-time>
  <icon>iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAB2HAAAdhwGP5fFlAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAIFJREFUWIXtlLERgDAMA2WOlkzGBCwDzATTMEYygClIAT6nS6BAX+pykc6JBZC/I1ZQ1aWRVwKwichxF7tGZh4DgNGKfem0iMw13VV1BRCs/uYEXBjA+wMRQMhvVptoBW8CO66VqU3Kdz/wJjA1MC/CHvh8CxiAPcAeYA8wAHuAkBNFsC5jpfReowAAAABJRU5ErkJggg==</icon>
