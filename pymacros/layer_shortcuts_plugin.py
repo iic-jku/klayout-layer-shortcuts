@@ -1,21 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<klayout-macro>
- <description/>
- <version/>
- <category>pymacros</category>
- <prolog/>
- <epilog/>
- <doc/>
- <autorun>true</autorun>
- <autorun-early>false</autorun-early>
- <priority>0</priority>
- <shortcut/>
- <show-in-menu>false</show-in-menu>
- <group-name/>
- <menu-path/>
- <interpreter>python</interpreter>
- <dsl-interpreter-name/>
- <text># --------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------
 # SPDX-FileCopyrightText: 2025 Martin Jan Köhler
 #
 # This program is free software: you can redistribute it and/or modify
@@ -29,143 +12,21 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 # SPDX-License-Identifier: GPL-3.0-or-later
 #--------------------------------------------------------------------------------
 
 from __future__ import annotations
-from dataclasses import dataclass, asdict, fields, is_dataclass
-from functools import cached_property
-import json
-import os 
 from pathlib import Path
-import sys
 import traceback
 from typing import *
 
 import pya
 
-if sys.version_info &gt;= (3, 11):
-    from enum import StrEnum
-else:
-    from enum import Enum
-    class StrEnum(str, Enum):
-        def __str__(self) -&gt; str:
-            return str(self.value)
+from klayout_plugin_utils.debugging import debug, Debugging
+from klayout_plugin_utils.event_loop import EventLoop
 
-
-DEBUG = False
-
-
-def debug(*args, **kwargs):
-    if DEBUG:
-        print(*args, **kwargs)
-
-
-#--------------------- dataclass serializiation ---------------------------
-def from_dict(cls, data: Dict):
-    if not is_dataclass(cls):
-        return data
-    kwargs = {}
-    hints = get_type_hints(cls)
-    for f in fields(cls):
-        if f.name in data:
-            field_type = hints[f.name]
-            value = data[f.name]
-            # handle lists of dataclasses
-            origin = getattr(field_type, '__origin__', None)
-            if origin is list:
-                item_type = field_type.__args__[0]
-                value = [from_dict(item_type, v) for v in value]
-            else:
-                value = from_dict(field_type, value)
-            kwargs[f.name] = value
-    return cls(**kwargs)
-#--------------------------------------------------------------------------------
-
-
-LayerUniqueName = str
-LayerGroupUniqueName = str
-
-
-@dataclass
-class NamedLayerGroup:
-    name: LayerGroupUniqueName
-    layers: List[LayerUniqueName]
-
-
-class LayerDescriptorKind(StrEnum):
-    NONE = 'none'
-    ALL = 'all'
-    LAYERS = 'layers'
-    LAYER_GROUPS = 'layer_groups'
-
-
-@dataclass
-class LayerDescriptor:
-    kind: LayerDescriptorKind
-    layers: Optional[List[LayerUniqueName]] = None
-    layer_groups: Optional[List[LayerGroupUniqueName]] = None
-
-
-class ActionKind(StrEnum):
-    RESET_AND_SHOW_ALL_LAYERS = 'reset_and_show_all_layers'
-    RESET_AND_HIDE_ALL_LAYERS = 'reset_and_hid_all_layers'
-    HIDE_LAYERS = 'hide_layers'
-    SHOW_LAYERS = 'show_layers'
-    SELECT_LAYER = 'select_layers'
-
-
-@dataclass
-class Action:
-    kind: ActionKind
-    layers: LayerDescriptor
-
-
-@dataclass
-class Shortcut:
-    title: str
-    key: str
-    actions: List[Action]
-
-#--------------------------------------------------------------------------------
-
-@dataclass
-class PDKInfo:
-    tech_name: str
-    layer_group_definitions: List[NamedLayerGroup]
-    shortcuts: List[Shortcut]
-    
-    @classmethod
-    def read_json(cls, path: Path) -&gt; PDKInfo:
-        with open(path) as f:
-            data = json.load(f)
-            return from_dict(cls, data)
-        
-    def write_json(self, path: Path):
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(asdict(self), f, indent=4)
-            
-    def layer_groups(self, names: List[LayerGroupUniqueName]) -&gt; List[NamedLayerGroup]:
-        return [g for g in self.layer_group_definitions if g.name in names]
-
-
-class PDKInfoFactory:
-    def __init__(self, search_path: List[Path]):
-        self._pdk_infos_by_tech_name: Dict[str, PDKInfo] = {}
-        
-        json_files = sorted({f for p in search_path for f in p.glob('*.json')})
-        for f in json_files:
-            try:
-                pdk_info = PDKInfo.read_json(f)
-                self._pdk_infos_by_tech_name[pdk_info.tech_name] = pdk_info
-            except Exception as e:
-                print(f"Failed to parse PDK info file {f}, skipping this file…", e)
-                
-    def pdk_info(self, tech_name: str) -&gt; Optional[PDKInfo]:
-        return self._pdk_infos_by_tech_name.get(tech_name, None)
-            
-#--------------------------------------------------------------------------------
+from pdk_info import *
 
 
 class LayerShortcutsPluginFactory(pya.PluginFactory):
@@ -183,36 +44,9 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         except Exception as e:
             print("LayerShortcutsPluginFactory.ctor caught an exception", e)
             traceback.print_exc()
-        
-    @classmethod
-    def defer(cls, callable: Callable):
-        # NOTE: if we directly call the Editor Options menu action
-        #       the GUI immediately will switch back to the Librariew view
-        #       so we enqueue it into the event loop
-
-        mw = pya.Application.instance().main_window()
     
-        def on_timeout():
-            try:
-                callable()
-            except Exception as e:
-                print("LayerShortcutsPluginFactory.defer():on_timeout() caught an exception", e)
-                traceback.print_exc()
-        
-            if getattr(cls, "_defer_timer", None):
-                try:
-                    cls._defer_timer._destroy()
-                except RuntimeError:
-                    pass  # already deleted by Qt
-                cls._defer_timer = None
-        
-        cls._defer_timer = pya.QTimer(mw)
-        cls._defer_timer.setSingleShot(True)
-        cls._defer_timer.timeout = on_timeout
-        cls._defer_timer.start(0)
-        
     def on_current_view_changed(self):
-        if DEBUG:
+        if Debugging.DEBUG:
              debug(f"LayerShortcutsPluginFactory.on_current_view_changed, self.view={self.view}")
              debug(f"LayerShortcutsPluginFactory.on_current_view_changed, self.view={self.view}, "
                    f"active cell name={'none' if self.cell_view is None else self.cell_view.cell_name}")
@@ -222,7 +56,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
 
         try:
             if self.layout is None:
-                if DEBUG:
+                if Debugging.DEBUGging.DEBUG:
                     debug("LayerShortcutPlugin.on_current_view_changed: no layout yet, register callback")
                 self.view.on_file_open.connect(self.layout_changed)
             else:
@@ -232,7 +66,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             traceback.print_exc()
         
     def on_view_created(self):
-        if DEBUG:
+        if Debugging.DEBUG:
              debug(f"LayerShortcutsPluginFactory.on_view_created, self.view={self.view}, "
                    f"active cell name={'none' if self.cell_view is None else self.cell_view.cell_name}")
 
@@ -241,49 +75,49 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         mw = pya.MainWindow.instance()
         menu = mw.menu()
         if not menu.is_menu("edit_menu.layer_navigation_group"):
-            if DEBUG:
+            if Debugging.DEBUG:
                 debug(f"LayerShortcutsPluginFactory.on_view_created, no menu found yet, "
                       f"seems we are in a startup situation, "
                       f"so we'll create the menu now")
             self.setup()
 
     def on_view_closed(self):
-        if DEBUG:
+        if Debugging.DEBUG:
              debug("LayerShortcutsPluginFactory.on_view_closed")
       
-    def menu_activated(self, symbol: str) -&gt; bool:
-        if DEBUG:
+    def menu_activated(self, symbol: str) -> bool:
+        if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.menu_activated: symbol={symbol}")
             
         if symbol == 'technology_selector:apply_technology':
-            if DEBUG:
+            if Debugging.DEBUG:
                 debug(f"LayerShortcutsPluginFactory.menu_activated: "
                       f"pya.CellView.active().technology().name={pya.CellView.active().technology} (NOTE: old, that's why we need defer)")
             # NOTE: we have to defer, otherwise the CellView won't have the new tech yet
-            self.defer(self.technology_applied)
+            EventLoop.defer(self.technology_applied)
             
-    def on_active_cellview_changed(self) -&gt; bool:
-        if DEBUG:
+    def on_active_cellview_changed(self) -> bool:
+        if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.on_active_cellview_changed: {self.cell_view.cell_name}")
             
     @property
-    def view(self) -&gt; pya.LayoutView:
+    def view(self) -> pya.LayoutView:
         return pya.LayoutView.current()
             
     @property
-    def cell_view(self) -&gt; pya.CellView:
+    def cell_view(self) -> pya.CellView:
         return pya.CellView.active()
 
     @property
-    def layout(self) -&gt; pya.Layout:
+    def layout(self) -> pya.Layout:
         return self.cell_view.layout()
 
     @property
-    def tech(self) -&gt; pya.Technology:
+    def tech(self) -> pya.Technology:
         return self.layout.technology()
 
     def clear_menu(self):
-        if DEBUG:
+        if Debugging.DEBUG:
             debug("LayerShortcutsPluginFactory.clear_menu")
                 
         mw = pya.MainWindow.instance()
@@ -298,9 +132,9 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                 break
             iter.next()
     
-    def layer_list_index_for_tab_name(self, name: str) -&gt; int:
+    def layer_list_index_for_tab_name(self, name: str) -> int:
         lv: pya.LayoutView = self.view
-        if 'layer_list_name' in dir(lv):  # Only KLayout &gt;=0.30.4 supports LayerView.layer_list_name()!
+        if 'layer_list_name' in dir(lv):  # Only KLayout >=0.30.4 supports LayerView.layer_list_name()!
             for attempt in range(0, 3):
                 names = []
                 for i in range(0, lv.num_layer_lists()):
@@ -308,7 +142,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                     if name == list_name:  # THIS API function
                         return i
                     names.append(list_name)
-                if DEBUG:
+                if Debugging.DEBUG:
                     debug(f"LayerShortcutsPluginFactory.layer_list_index_for_tab_name: {name}, "
                           f"could not find a layer, names were: {names} (attempt #{attempt})")
             
@@ -317,8 +151,8 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
     def update_layer_list(self, 
                           name: str, 
                           visible_layers: List[pya.LayerProperties],
-                          selected_layer: Optional[pya.LayerProperties]) -&gt; int:
-        if DEBUG:
+                          selected_layer: Optional[pya.LayerProperties]) -> int:
+        if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.update_layer_list: {name}, "
                   f"{len(visible_layers)} layers, selected_layer={selected_layer.name if selected_layer else 'none'}")
         
@@ -346,19 +180,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             
             mw = pya.Application.instance().main_window()
         
-            def on_timeout():
-                self.select_layer(list_idx, selected_layer)
-                if getattr(self, "_defer_timer", None):
-                    try:
-                        self._defer_timer._destroy()
-                    except RuntimeError:
-                        pass  # already deleted by Qt
-                    self._defer_timer = None
-            
-            self._defer_timer = pya.QTimer(mw)
-            self._defer_timer.setSingleShot(True)
-            self._defer_timer.timeout = on_timeout
-            self._defer_timer.start(0)
+            EventLoop.defer(lambda li=list_idx, sl=selected_layer: self.select_layer(li, sl))
         
         return list_idx
     
@@ -367,12 +189,12 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         if list_idx != -1:
             self.view.delete_layer_list(list_idx)
         else:
-            if DEBUG:
+            if Debugging.DEBUG:
                 debug(f"LayerShortcutsPluginFactory.remove_layer_list: no tab list found for name {name}")
         
     
     def trigger_shortcut(self, action: pya.Action, pdk_info: PDKInfo, shortcut: Shortcut):
-        if DEBUG:
+        if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.trigger_shortcut: {action} {action.title}")
         
         source_list_idx = 0
@@ -467,7 +289,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         self.update_layer_list('LayNav', visible_layers, selected_layer)
         
     def set_menu_for_current_tech(self):
-        if DEBUG:
+        if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.set_menu_for_current_tech, tech {self.tech.name}")
         
         pdk_info = self.pdk_info_factory.pdk_info(self.tech.name)
@@ -491,13 +313,13 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
 
     def setup(self):
         if self._in_conflicting_shortcut_dialog:
-            if DEBUG:
+            if Debugging.DEBUG:
                 debug(f"LayerShortcutsPluginFactory.setup, "
                       f"conflicting shortcut dialog already displayed, early exit")
             return
           
         try:
-            if DEBUG:
+            if Debugging.DEBUG:
                 debug(f"LayerShortcutsPluginFactory.setup, "
                       f"for cell view {self.cell_view.cell_name}, "
                       f"tech: {self.tech.name}, "
@@ -510,14 +332,14 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             traceback.print_exc()            
 
     @staticmethod
-    def is_key_bound(key: str) -&gt; bool:
+    def is_key_bound(key: str) -> bool:
         return key is not None and key != '' and key != 'none'
 
-    def all_actions_with_keybindings(self) -&gt; List[pya.Action]:
+    def all_actions_with_keybindings(self) -> List[pya.Action]:
         mw = pya.MainWindow.instance()
         menu = mw.menu()
         
-        def actions_with_keybindings(path: str) -&gt; List[Tuple[str, pya.Action]]:
+        def actions_with_keybindings(path: str) -> List[Tuple[str, pya.Action]]:
             actions = []
         
             action = menu.action(path)
@@ -564,23 +386,23 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                 conflict_keys.add(shortcut)
         
         if conflicts:
-            msg = "The &lt;i&gt;LayerShortcuts&lt;/i&gt; plugin wants to configure new shortcuts:&lt;br/&gt;"
+            msg = "The <i>LayerShortcuts</i> plugin wants to configure new shortcuts:<br/>"
             for title, key in configured_shortcuts:
                 if key in conflict_keys:
-                    msg += "&lt;font color='red'&gt;"
-                msg += f"&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;• &lt;i&gt;{title}&lt;/i&gt; (&lt;code&gt;{key}&lt;/code&gt;)&lt;br/&gt;"
+                    msg += "<font color='red'>"
+                msg += f"&nbsp;&nbsp;&nbsp;&nbsp;• <i>{title}</i> (<code>{key}</code>)<br/>"
                 if key in conflict_keys:
-                    msg += "&lt;/font&gt;"
+                    msg += "</font>"
             
-            msg += "&lt;br/&gt;Some shortcuts are already in use:&lt;br/&gt;"
+            msg += "<br/>Some shortcuts are already in use:<br/>"
             for path, action in conflicts:
                 key = action.effective_shortcut()
                 if key in conflict_keys:
-                    msg += "&lt;font color='red'&gt;"
-                msg += f"&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;• &lt;i&gt;{action.title}&lt;/i&gt; (&lt;code&gt;{key}&lt;/code&gt;)&lt;br/&gt;"
+                    msg += "<font color='red'>"
+                msg += f"&nbsp;&nbsp;&nbsp;&nbsp;• <i>{action.title}</i> (<code>{key}</code>)<br/>"
                 if key in conflict_keys:
-                    msg += "&lt;/font&gt;"
-            msg += "&lt;br/&gt;Do you want to remove these conflicting shortcuts?"
+                    msg += "</font>"
+            msg += "<br/>Do you want to remove these conflicting shortcuts?"
             
             # Ask the user
             try:
@@ -600,7 +422,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         self.set_menu_for_current_tech()
 
     def layout_changed(self):
-        if DEBUG:
+        if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.layout_changed, "
                   f"for cell view {self.cell_view.cell_name}")
         
@@ -614,7 +436,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
 
     def technology_applied(self):
         new_tech_name = pya.CellView.active().technology
-        if DEBUG:
+        if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.technology_applied, "
                   f"for cell view {self.cell_view.cell_name}, "
                   f"tech: {new_tech_name}")
@@ -623,37 +445,38 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             self.setup()
             # NOTE: this configure-triggered event is sometimes called before the tech 
             #       of the layout really is updated, so we defer this in the event loop
-            ## self.defer(self.setup)
+            ## EventLoop.defer(self.setup)
         except Exception as e:
             print("LayerShortcutsPluginFactory.technology_applied caught an exception", e)
             traceback.print_exc()        
     
-    def configure(self, name: str, value: str) -&gt; bool:
-        if DEBUG:
+    def configure(self, name: str, value: str) -> bool:
+        if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.configure, name={name}, value={value}")
             
         if name == 'initial-technology':
-            self.defer(self.technology_applied)
+            EventLoop.defer(self.technology_applied)
             
         return False
             
+#--------------------------------------------------------------------------------
 
 def on_current_view_changed():
     try:
-      if DEBUG:
+      if Debugging.DEBUG:
           debug(f"(GLOBAL) on_current_view_changed")
       inst = LayerShortcutsPluginFactory.instance
-      inst.defer(inst.on_current_view_changed)
+      EventLoop.defer(inst.on_current_view_changed)
     except Exception as e:
         print("(GLOBAL) on_current_view_changed caught an exception", e)
         traceback.print_exc()
     
 def on_view_created():
     try:
-      if DEBUG:
+      if Debugging.DEBUG:
           debug("(GLOBAL) on_view_created")
       inst = LayerShortcutsPluginFactory.instance
-      inst.defer(inst.on_view_created)
+      EventLoop.defer(inst.on_view_created)
     except Exception as e:
         print("(GLOBAL) on_view_created caught an exception", e)
         traceback.print_exc()
@@ -661,99 +484,16 @@ def on_view_created():
 
 def on_view_closed():
     try:
-      if DEBUG:
+      if Debugging.DEBUG:
           debug("(GLOBAL) on_view_closed")
       inst = LayerShortcutsPluginFactory.instance
-      inst.defer(inst.on_view_closed)
+      EventLoop.defer(inst.on_view_closed)
     except Exception as e:
         print("(GLOBAL) on_view_closed caught an exception", e)
         traceback.print_exc()
 
 
 #--------------------------------------------------------------------------------
-
-def dump_example_pdk_info():
-    def met_layers(name: str) -&gt; List[str]:
-        return [f"{name}.drawing", f"{name}.pin", f"{name}.text", f"{name}.label"]
-
-    def met_shortcut(prefix: str, key: str, i: int) -&gt; List[Shortcut]:
-        return [
-            Shortcut(title=f"Focus on {prefix}{i} layers", key=key, actions=[
-                Action(kind=ActionKind.HIDE_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL)),
-                Action(kind=ActionKind.SHOW_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=[f"{prefix}{i}.Visible"])),
-                Action(kind=ActionKind.SELECT_LAYER, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=[f"{prefix}{i}.Selected"])),
-            ]),
-        ]
-        
-    layer_group_definitions: List[NamedLayerGroup] = []
-    shortcuts: List[Shortcut] = [
-        Shortcut(title='Show default layers', key='0', actions=[
-            Action(kind=ActionKind.RESET_AND_SHOW_ALL_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL))
-        ]),
-        Shortcut(title='Hide default layers', key=',', actions=[
-            Action(kind=ActionKind.RESET_AND_HIDE_ALL_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL))
-        ]),
-    ]
-    for i in range(1, 6):
-        shortcuts += met_shortcut(prefix='Metal', key=str(i), i=i)
-    for i in range(1, 3):
-        shortcuts += met_shortcut(prefix='TopMetal', key=str(5+i), i=i)
-    shortcuts += [
-            Shortcut(title='Focus on GatPoly layers', key='8', actions=[
-                Action(kind=ActionKind.HIDE_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL)),
-                Action(kind=ActionKind.SHOW_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=['GatPoly.Visible'])),
-                Action(kind=ActionKind.SELECT_LAYER, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=['GatPoly.Selected'])),
-            ]),
-            Shortcut(title='Focus on Activ layers', key='9', actions=[
-                Action(kind=ActionKind.HIDE_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL)),
-                Action(kind=ActionKind.SHOW_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=['Activ.Visible'])),
-                Action(kind=ActionKind.SELECT_LAYER, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=['Activ.Selected'])),
-            ]),
-    ]
-
-    pi = PDKInfo(
-        tech_name='sg13g2',
-        layer_group_definitions = [
-            NamedLayerGroup(name='Metal1.Visible',  layers=met_layers('Metal1') + ['Cont.drawing', 'Via1.drawing']),
-            NamedLayerGroup(name='Metal1.Selected', layers=['Metal1.drawing']),
-            NamedLayerGroup(name='Metal2.Visible',  layers=met_layers('Metal2') + ['Via1.drawing', 'Via2.drawing']),
-            NamedLayerGroup(name='Metal2.Selected', layers=['Metal2.drawing']),
-            NamedLayerGroup(name='Metal3.Visible',  layers=met_layers('Metal3') + ['Via2.drawing', 'Via3.drawing']),
-            NamedLayerGroup(name='Metal3.Selected', layers=['Metal3.drawing']),
-            NamedLayerGroup(name='Metal4.Visible',  layers=met_layers('Metal4') + ['Via3.drawing', 'Via4.drawing']),
-            NamedLayerGroup(name='Metal4.Selected', layers=['Metal4.drawing']),
-            NamedLayerGroup(name='Metal5.Visible',  layers=met_layers('Metal5') + ['Via4.drawing', 'TopVia1.drawing']),
-            NamedLayerGroup(name='Metal5.Selected', layers=['Metal5.drawing']),
-            NamedLayerGroup(name='TopMetal1.Visible',  layers=met_layers('TopMetal1') + ['TopVia1.drawing', 'TopVia2.drawing']),
-            NamedLayerGroup(name='TopMetal1.Selected', layers=['TopMetal1.drawing']),
-            NamedLayerGroup(name='TopMetal2.Visible',  layers=met_layers('TopMetal2') + ['TopVia1.drawing']),
-            NamedLayerGroup(name='TopMetal2.Selected', layers=['TopMetal2.drawing']),
-            NamedLayerGroup(name='GatPoly.Visible',  layers=['GatPoly.drawing', 'PolyRes.drawing', 'Cont.drawing']),
-            NamedLayerGroup(name='GatPoly.Selected', layers=['GatPoly.drawing']),
-            NamedLayerGroup(name='Activ.Visible',  layers=['Activ.drawing', 'Cont.drawing', 'NWell.drawing', 'nBuLay.drawing', 
-                                                          'pSD.drawing', 'nSD.drawing', 'SalBlock.drawing', 'RES.drawing']),
-            NamedLayerGroup(name='Activ.Selected', layers=['Activ.drawing']),
-        ],
-        shortcuts=shortcuts
-    )
-     
-    path = os.path.abspath('ihp-sg13g2.json')
-    pi.write_json(path)
-    print(f"Dumped example PDK Info file to {path}")
-
-
-def test_parse():
-    script_dir = Path(__file__).resolve().parent
-    f = PDKInfoFactory(search_path=[script_dir / '..' / 'pdks'])
-    for pi in f.pdk_infos_by_tech_name.values():
-        json.dump(asdict(pi), sys.stdout, indent=4)
-
-#--------------------------------------------------------------------------------
-
-# dump_example_pdk_info()
-# test_parse()
-
-LayerShortcutsPluginFactory.instance = LayerShortcutsPluginFactory()
 
 # NOTE: need to keep an instance currently.
 # (will be fixed in 0.30.4, so we can pull a temporary instance)
@@ -762,5 +502,3 @@ mw = pya.MainWindow.instance()
 mw.on_current_view_changed += on_current_view_changed
 mw.on_view_created += on_view_created
 mw.on_view_closed += on_view_closed
-</text>
-</klayout-macro>
