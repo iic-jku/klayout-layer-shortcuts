@@ -3,7 +3,7 @@
  <name>LayerShortcutsPlugin</name>
  <token/>
  <hidden>false</hidden>
- <version>0.9</version>
+ <version>0.10</version>
  <api-version/>
  <title>Layer Shortcuts Plugin</title>
  <doc>Shortcuts to quickly change layer visibility</doc>
