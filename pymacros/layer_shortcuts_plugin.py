@@ -56,7 +56,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
 
         try:
             if self.layout is None:
-                if Debugging.DEBUGging.DEBUG:
+                if Debugging.DEBUG:
                     debug("LayerShortcutPlugin.on_current_view_changed: no layout yet, register callback")
                 self.view.on_file_open.connect(self.layout_changed)
             else:
