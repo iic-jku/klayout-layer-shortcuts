@@ -17,12 +17,13 @@
 #--------------------------------------------------------------------------------
 
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import json
 import os
 from pathlib import Path
 import sys
 from typing import *
+import unittest
 
 from klayout_plugin_utils.debugging import debug, Debugging
 from klayout_plugin_utils.str_enum_compat import StrEnum
@@ -112,7 +113,7 @@ class PDKInfoFactory:
             
 #--------------------------------------------------------------------------------
 
-def dump_example_pdk_info():
+def build_example_pdk_info() -> PDKInfo:
     def met_layers(name: str) -> List[str]:
         return [f"{name}.drawing", f"{name}.pin", f"{name}.text", f"{name}.label"]
 
@@ -176,20 +177,45 @@ def dump_example_pdk_info():
         ],
         shortcuts=shortcuts
     )
-     
-    path = os.path.abspath('ihp-sg13g2.json')
-    pi.write_json(path)
-    print(f"Dumped example PDK Info file to {path}")
+    return pi
+    
+    
+#--------------------------------------------------------------------------------
 
+class PDKInfoTests(unittest.TestCase):
+    def setUp(self):
+        self.pi = build_example_pdk_info()
+        
+    def check_pdk_info(self, pdk_info: PDKInfo):
+        self.assertEqual('sg13g2', self.pi.tech_name)
+        self.assertEqual('Metal1.Visible', self.pi.layer_group_definitions[0].name)
+        self.assertIn('Metal1.drawing', self.pi.layer_group_definitions[0].layers)
+        self.assertEqual('Show default layers', self.pi.shortcuts[0].title)
+        self.assertEqual('0', self.pi.shortcuts[0].key)
+        self.assertEqual(ActionKind.RESET_AND_SHOW_ALL_LAYERS, self.pi.shortcuts[0].actions[0].kind)
 
-def test_parse():
-    script_dir = Path(__file__).resolve().parent
-    f = PDKInfoFactory(search_path=[script_dir / '..' / 'pdks'])
-    for pi in f.pdk_infos_by_tech_name.values():
-        json.dump(asdict(pi), sys.stdout, indent=4)
+    def dump_pdk_info(self, pdk_info) -> str:
+        path = os.path.abspath('ihp-sg13g2.json')
+        pdk_info.write_json(path)
+        print(f"Dumped example PDK Info file to {path}")
+        return path
+        
+    def test_validate_expectations(self):
+        self.check_pdk_info(self.pi)
+        
+    def test_write_and_read_back_in(self):
+        path = self.dump_pdk_info(self.pi)
+        
+        obtained = PDKInfo.read_json(path)
+        self.check_pdk_info(obtained)
+        
+    def test_parse_packaged_pdk_infos(self):
+        script_dir = Path(__file__).resolve().parent
+        f = PDKInfoFactory(search_path=[script_dir / '..' / 'pdks'])
+        for pi in f._pdk_infos_by_tech_name.values():
+            json.dump(asdict(pi), sys.stdout, indent=4)
 
 #--------------------------------------------------------------------------------
 
-# dump_example_pdk_info()
-# test_parse()
-
+if __name__ == "__main__":
+    unittest.main()
