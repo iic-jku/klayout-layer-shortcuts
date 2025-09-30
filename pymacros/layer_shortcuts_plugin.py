@@ -171,6 +171,7 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         self.view.current_layer_list = list_idx
 
         for l in visible_layers:
+            l.visible = True
             self.view.insert_layer(list_idx, self.view.end_layers(), l)
     
         if selected_layer is not None:
