@@ -167,7 +167,7 @@ def build_example_pdk_info() -> PDKInfo:
             NamedLayerGroup(name='Metal5.Selected', layers=['Metal5.drawing']),
             NamedLayerGroup(name='TopMetal1.Visible',  layers=met_layers('TopMetal1') + ['TopVia1.drawing', 'TopVia2.drawing']),
             NamedLayerGroup(name='TopMetal1.Selected', layers=['TopMetal1.drawing']),
-            NamedLayerGroup(name='TopMetal2.Visible',  layers=met_layers('TopMetal2') + ['TopVia1.drawing']),
+            NamedLayerGroup(name='TopMetal2.Visible',  layers=met_layers('TopMetal2') + ['TopVia2.drawing']),
             NamedLayerGroup(name='TopMetal2.Selected', layers=['TopMetal2.drawing']),
             NamedLayerGroup(name='GatPoly.Visible',  layers=['GatPoly.drawing', 'PolyRes.drawing', 'Cont.drawing']),
             NamedLayerGroup(name='GatPoly.Selected', layers=['GatPoly.drawing']),
