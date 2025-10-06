@@ -34,8 +34,11 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         super().__init__()
                 
         try:
+            mw = pya.MainWindow.instance()
             self._in_conflicting_shortcut_dialog = False
-
+            self._hide_empty_layers_user_cfg = bool(mw.get_config('hide-empty-layers') == 'true')
+            self._ignore_hide_empty_layers_change = False
+            
             script_dir = Path(__file__).resolve().parent
             self.pdk_info_factory = PDKInfoFactory(search_path=[script_dir / '..' / 'pdks'])
             
@@ -192,7 +195,12 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         else:
             if Debugging.DEBUG:
                 debug(f"LayerShortcutsPluginFactory.remove_layer_list: no tab list found for name {name}")
-        
+    
+    def set_config_hide_empty_layers(self, hide: bool):
+        self._ignore_hide_empty_layers_change = True  # ensure self.config does not interpret this as a user-triggered change
+        mw = pya.MainWindow.instance()
+        mw.set_config('hide-empty-layers', 'true' if hide else 'false')
+        self._ignore_hide_empty_layers_change = False
     
     def trigger_shortcut(self, action: pya.Action, pdk_info: PDKInfo, shortcut: Shortcut):
         if Debugging.DEBUG:
@@ -270,6 +278,8 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                     for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
                         lp.visible = True
                     self.view.update_content()
+                    if self._hide_empty_layers_user_cfg:
+                        self.set_config_hide_empty_layers(True)
                     return
                 case ActionKind.RESET_AND_HIDE_ALL_LAYERS:
                     self.view.current_layer_list = 0
@@ -277,6 +287,8 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                     for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
                         lp.visible = False
                     self.view.update_content()
+                    if self._hide_empty_layers_user_cfg:
+                        self.set_config_hide_empty_layers(True)
                     return
                 case ActionKind.HIDE_LAYERS:
                     apply_function(action.layers, hide_incl, hide_excl)
@@ -286,7 +298,11 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                     apply_function(action.layers, select_incl, select_excl)
                 case _:
                     raise NotImplementedError()
-                    
+
+        # NOTE: When the user executes any focus commands, 
+        #       we can assume that the layers should be made visible
+        self.set_config_hide_empty_layers(False)
+
         self.update_layer_list('LayNav', visible_layers, selected_layer)
         
     def set_menu_for_current_tech(self):
@@ -457,6 +473,8 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             
         if name == 'initial-technology':
             EventLoop.defer(self.technology_applied)
+        elif name == 'hide-empty-layers' and not self._ignore_hide_empty_layers_change:
+            self._hide_empty_layers_user_cfg = bool(value == 'true')
             
         return False
             
