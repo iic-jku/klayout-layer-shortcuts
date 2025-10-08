@@ -100,6 +100,7 @@
             "name": "poly.Visible",
             "layers": [
                 "poly.drawing - 66/20",
+                "poly.label - 66/5",
                 "poly.pin - 66/16",
                 "poly.res - 66/13",
                 "licon1.drawing - 66/44"
