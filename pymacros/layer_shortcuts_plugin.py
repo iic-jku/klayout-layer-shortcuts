@@ -337,13 +337,20 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
           
         try:
             if Debugging.DEBUG:
-                debug(f"LayerShortcutsPluginFactory.setup, "
+                msg = f"LayerShortcutsPluginFactory.setup, "\
                       f"for cell view {self.cell_view.cell_name}, "
-                      f"tech: {self.tech.name}, "
-                      f"self.tech.name: {self.tech.name}")
+                if self.layout is None:
+                    msg += "no layout yet"
+                else:
+                    msg += f"tech: {self.tech.name}, "\
+                           f"self.tech.name: {self.tech.name}"
+                debug(msg)
     
-            self.check_for_ambiguous_shortcuts()
-            self.reset_menu()
+            if self.layout is None:
+                self.clear_menu()
+            else:
+                self.check_for_ambiguous_shortcuts()
+                self.reset_menu()
         except Exception as e:
             print("LayerShortcutsPluginFactory.setup caught an exception", e)
             traceback.print_exc()            
