@@ -8,6 +8,8 @@
                 "Metal1.pin",
                 "Metal1.text",
                 "Metal1.label",
+                "Metal1.filler",
+                "Metal1.nofill",
                 "Cont.drawing",
                 "Via1.drawing"
             ]
@@ -25,6 +27,8 @@
                 "Metal2.pin",
                 "Metal2.text",
                 "Metal2.label",
+                "Metal2.filler",
+                "Metal2.nofill",
                 "Via1.drawing",
                 "Via2.drawing"
             ]
@@ -42,6 +46,8 @@
                 "Metal3.pin",
                 "Metal3.text",
                 "Metal3.label",
+                "Metal3.filler",
+                "Metal3.nofill",
                 "Via2.drawing",
                 "Via3.drawing"
             ]
@@ -59,6 +65,8 @@
                 "Metal4.pin",
                 "Metal4.text",
                 "Metal4.label",
+                "Metal4.filler",
+                "Metal4.nofill",
                 "Via3.drawing",
                 "Via4.drawing"
             ]
@@ -76,8 +84,12 @@
                 "Metal5.pin",
                 "Metal5.text",
                 "Metal5.label",
+                "Metal5.filler",
+                "Metal5.nofill",
                 "Via4.drawing",
-                "TopVia1.drawing"
+                "TopVia1.drawing",
+                "MIM.drawing",
+                "Vmim.drawing"
             ]
         },
         {
@@ -93,8 +105,12 @@
                 "TopMetal1.pin",
                 "TopMetal1.text",
                 "TopMetal1.label",
+                "TopMetal1.filler",
+                "TopMetal1.nofill",
                 "TopVia1.drawing",
-                "TopVia2.drawing"
+                "TopVia2.drawing",
+                "MIM.drawing",
+                "Vmim.drawing"
             ]
         },
         {
@@ -110,7 +126,10 @@
                 "TopMetal2.pin",
                 "TopMetal2.text",
                 "TopMetal2.label",
-                "TopVia2.drawing"
+                "TopMetal2.filler",
+                "TopMetal2.nofill",
+                "TopVia2.drawing",
+                "Passiv.drawing"
             ]
         },
         {
@@ -123,6 +142,8 @@
             "name": "GatPoly.Visible",
             "layers": [
                 "GatPoly.drawing",
+                "GatPoly.filler",
+                "GatPoly.nofill",
                 "PolyRes.drawing",
                 "Cont.drawing"
             ]
@@ -137,6 +158,8 @@
             "name": "Activ.Visible",
             "layers": [
                 "Activ.drawing",
+                "Activ.filler",
+                "Activ.nofill",
                 "Cont.drawing",
                 "NWell.drawing",
                 "nBuLay.drawing",
