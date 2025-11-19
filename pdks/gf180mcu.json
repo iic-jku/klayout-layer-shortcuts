@@ -115,7 +115,7 @@
             ]
         },
         {
-            "name": "Poly.Visible",
+            "name": "Poly2.Visible",
             "layers": [
                 "Poly2 30/0@1",
                 "Poly2_Label 30/10@1",
@@ -123,7 +123,7 @@
             ]
         },
         {
-            "name": "Poly.Selected",
+            "name": "Poly2.Selected",
             "layers": [
                 "Poly2 30/0@1"
             ]
