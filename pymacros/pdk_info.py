@@ -115,7 +115,7 @@ class PDKInfoFactory:
 
 def build_example_pdk_info() -> PDKInfo:
     def met_layers(name: str) -> List[str]:
-        return [f"{name}.drawing", f"{name}.pin", f"{name}.text", f"{name}.label"]
+        return [f"{name}.drawing", f"{name}.pin", f"{name}.text", f"{name}.label", f"{name}.filler", f"{name}.nofill"]
 
     def met_shortcut(prefix: str, key: str, i: int) -> List[Shortcut]:
         return [
@@ -163,15 +163,19 @@ def build_example_pdk_info() -> PDKInfo:
             NamedLayerGroup(name='Metal3.Selected', layers=['Metal3.drawing']),
             NamedLayerGroup(name='Metal4.Visible',  layers=met_layers('Metal4') + ['Via3.drawing', 'Via4.drawing']),
             NamedLayerGroup(name='Metal4.Selected', layers=['Metal4.drawing']),
-            NamedLayerGroup(name='Metal5.Visible',  layers=met_layers('Metal5') + ['Via4.drawing', 'TopVia1.drawing']),
+            NamedLayerGroup(name='Metal5.Visible',  layers=met_layers('Metal5') + ['Via4.drawing', 'TopVia1.drawing', 
+                                                                                   'MIM.drawing', 'Vmim.drawing']),
             NamedLayerGroup(name='Metal5.Selected', layers=['Metal5.drawing']),
-            NamedLayerGroup(name='TopMetal1.Visible',  layers=met_layers('TopMetal1') + ['TopVia1.drawing', 'TopVia2.drawing']),
+            NamedLayerGroup(name='TopMetal1.Visible',  layers=met_layers('TopMetal1') + ['TopVia1.drawing', 'TopVia2.drawing',
+                                                                                         'MIM.drawing', 'Vmim.drawing']),
             NamedLayerGroup(name='TopMetal1.Selected', layers=['TopMetal1.drawing']),
-            NamedLayerGroup(name='TopMetal2.Visible',  layers=met_layers('TopMetal2') + ['TopVia2.drawing']),
+            NamedLayerGroup(name='TopMetal2.Visible',  layers=met_layers('TopMetal2') + ['TopVia2.drawing', 'Passiv.drawing']),
             NamedLayerGroup(name='TopMetal2.Selected', layers=['TopMetal2.drawing']),
-            NamedLayerGroup(name='GatPoly.Visible',  layers=['GatPoly.drawing', 'PolyRes.drawing', 'Cont.drawing']),
+            NamedLayerGroup(name='GatPoly.Visible',  layers=['GatPoly.drawing', 'GatPoly.filler', 'GatPoly.nofill', 
+                                                             'PolyRes.drawing', 'Cont.drawing']),
             NamedLayerGroup(name='GatPoly.Selected', layers=['GatPoly.drawing']),
-            NamedLayerGroup(name='Activ.Visible',  layers=['Activ.drawing', 'Cont.drawing', 'NWell.drawing', 'nBuLay.drawing', 
+            NamedLayerGroup(name='Activ.Visible',  layers=['Activ.drawing', 'Activ.filler', 'Activ.nofill', 
+                                                           'Cont.drawing', 'NWell.drawing', 'nBuLay.drawing', 
                                                           'pSD.drawing', 'nSD.drawing', 'SalBlock.drawing', 'RES.drawing']),
             NamedLayerGroup(name='Activ.Selected', layers=['Activ.drawing']),
         ],

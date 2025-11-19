@@ -87,7 +87,9 @@
                 "met5.drawing - 72/20",
                 "met5.pin - 72/16",
                 "met5.label - 72/5",
-                "via4.drawing - 71/44"
+                "via4.drawing - 71/44",
+                "pad.drawing - 76/20",
+                "pad.pin - 76/16"
             ]
         },
         {
@@ -103,7 +105,8 @@
                 "poly.label - 66/5",
                 "poly.pin - 66/16",
                 "poly.res - 66/13",
-                "licon1.drawing - 66/44"
+                "licon1.drawing - 66/44",
+                "npc.drawing - 95/20"
             ]
         },
         {
@@ -121,6 +124,7 @@
                 "dnwell.drawing - 64/18",
                 "psdm.drawing - 94/20",
                 "nsdm.drawing - 93/44",
+                "tap.drawing - 65/44",
                 "diff.res - 65/13"
             ]
         },
