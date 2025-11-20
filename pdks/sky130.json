@@ -171,6 +171,10 @@
             }
         },
         {
+            "kind": "separator",
+            "shortcut": null
+        },
+        {
             "kind": "shortcut",
             "shortcut": {
                 "title": "Focus on li1 layers",
@@ -443,6 +447,242 @@
                             "layer_groups": null
                         }
                     },
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "diff.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "diff.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "separator",
+            "shortcut": null
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add li1 layers",
+                "key": "Shift+1",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "li1.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "li1.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add met1 layers",
+                "key": "Shift+2",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met1.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met1.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add met2 layers",
+                "key": "Shift+3",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met2.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met2.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add met3 layers",
+                "key": "Shift+4",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met3.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met3.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add met4 layers",
+                "key": "Shift+5",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met4.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met4.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add met5 layers",
+                "key": "Shift+6",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met5.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "met5.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add poly layers",
+                "key": "Shift+8",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "poly.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "poly.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add diff layers",
+                "key": "Shift+9",
+                "actions": [
                     {
                         "kind": "show_layers",
                         "layers": {

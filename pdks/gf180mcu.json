@@ -187,6 +187,10 @@
             }
         },
         {
+            "kind": "separator",
+            "shortcut": null
+        },
+        {
             "kind": "shortcut",
             "shortcut": {
                 "title": "Focus on Metal1 layers",
@@ -459,6 +463,242 @@
                             "layer_groups": null
                         }
                     },
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "COMP.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "COMP.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "separator",
+            "shortcut": null
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add Metal1 layers",
+                "key": "Shift+1",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal1.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal1.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add Metal2 layers",
+                "key": "Shift+2",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal2.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal2.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add Metal3 layers",
+                "key": "Shift+3",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal3.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal3.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add Metal4 layers",
+                "key": "Shift+4",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal4.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal4.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add Metal5 layers",
+                "key": "Shift+5",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal5.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Metal5.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add MetalTop layers",
+                "key": "Shift+6",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "MetalTop.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "MetalTop.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add Poly2 layers",
+                "key": "Shift+8",
+                "actions": [
+                    {
+                        "kind": "show_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Poly2.Visible"
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "select_layers",
+                        "layers": {
+                            "kind": "layer_groups",
+                            "layers": null,
+                            "layer_groups": [
+                                "Poly2.Selected"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "shortcut",
+            "shortcut": {
+                "title": "Add COMP layers",
+                "key": "Shift+9",
+                "actions": [
                     {
                         "kind": "show_layers",
                         "layers": {
