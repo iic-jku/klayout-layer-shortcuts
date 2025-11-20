@@ -202,67 +202,89 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         mw.set_config('hide-empty-layers', 'true' if hide else 'false')
         self._ignore_hide_empty_layers_change = False
     
+    def each_layer(self, source_list_idx: int) -> pya.LayerPropertiesNodeRef:
+        iter = self.view.begin_layers(source_list_idx)
+        while not iter.at_end():
+            lp = iter.current()
+            yield lp
+            iter.next()
+    
     def trigger_shortcut(self, action: pya.Action, pdk_info: PDKInfo, shortcut: Shortcut):
         if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.trigger_shortcut: {action} {action.title}")
         
         source_list_idx = 0
-        visible_layers: List[pya.LayerProperties] = []
+        visible_layers: List[pya.LayerProperties] = list(self.each_layer(self.view.current_layer_list))
         selected_layer = None
+        
+        def lp_name(lp: pya.LayerPropertiesNodeRef) -> str:
+            return lp.name or lp.source
         
         def apply_function(layer_descriptor: LayerDescriptor,
                            incl_function: Callable[pya.LayerPropertiesIterator, pya.LayerPropertiesNodeRef], 
                            excl_function: Callable[pya.LayerPropertiesIterator, pya.LayerPropertiesNodeRef]):
-                match layer_descriptor.kind:
-                    case LayerDescriptorKind.ALL:
-                        iter = self.view.begin_layers(source_list_idx)
-                        while not iter.at_end():
-                            lp = iter.current()
+            match layer_descriptor.kind:
+                case LayerDescriptorKind.ALL:
+                    iter = self.view.begin_layers(source_list_idx)
+                    while not iter.at_end():
+                        lp = iter.current()
+                        incl_function(iter, lp)
+                        iter.next()
+                case LayerDescriptorKind.NONE:
+                    iter = self.view.begin_layers(source_list_idx)
+                    while not iter.at_end():
+                        lp = iter.current()
+                        excl_function(iter, lp)
+                        iter.next()
+                case LayerDescriptorKind.LAYERS:
+                    iter = self.view.begin_layers(source_list_idx)
+                    while not iter.at_end():
+                        lp = iter.current()
+                        if lp.name in layer_descriptor.layers:
                             incl_function(iter, lp)
-                            iter.next()
-                    case LayerDescriptorKind.NONE:
-                        iter = self.view.begin_layers(source_list_idx)
-                        while not iter.at_end():
-                            lp = iter.current()
+                        else:
                             excl_function(iter, lp)
-                            iter.next()
-                    case LayerDescriptorKind.LAYERS:
-                        iter = self.view.begin_layers(source_list_idx)
-                        while not iter.at_end():
-                            lp = iter.current()
-                            if lp.name in layer_descriptor.layers:
-                                incl_function(iter, lp)
-                            else:
-                                excl_function(iter, lp)
-                            iter.next()
-                    case LayerDescriptorKind.LAYER_GROUPS:
-                        layer_groups = pdk_info.layer_groups(layer_descriptor.layer_groups)
-                        layer_names = {l for g in layer_groups for l in g.layers}
-                        
-                        iter = self.view.begin_layers(source_list_idx)
-                        while not iter.at_end():
-                            lp = iter.current()
-                            lname = lp.name or lp.source
-                            if lname is None:
-                                continue
-                            if lname in layer_names:
-                                incl_function(iter, lp)
-                            else:
-                                excl_function(iter, lp)
-                            iter.next()
+                        iter.next()
+                case LayerDescriptorKind.LAYER_GROUPS:
+                    layer_groups = pdk_info.layer_groups(layer_descriptor.layer_groups)
+                    layer_names = {l for g in layer_groups for l in g.layers}
+                    
+                    iter = self.view.begin_layers(source_list_idx)
+                    while not iter.at_end():
+                        lp = iter.current()
+                        lname = lp_name(lp)
+                        if lname is None:
+                            continue
+                        if lname in layer_names:
+                            incl_function(iter, lp)
+                        else:
+                            excl_function(iter, lp)
+                        iter.next()
+        
+        def remove_visible_layer(lp: pya.LayerPropertiesNodeRef):
+            nonlocal visible_layers
+            n = lp_name(lp)
+            visible_layers = [l for l in visible_layers if n != lp_name(l)]
+        
+        def append_visible_layer_if_needed(lp: pya.LayerPropertiesNodeRef):
+            n = lp_name(lp)
+            for l in visible_layers:
+                if lp_name(l) == n:
+                    return  # already visible
+            visible_layers.append(lp)
         
         def hide_incl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
-            pass
+            remove_visible_layer(lp)
         
         def hide_excl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
-            visible_layers.append(lp)
+            pass
         
         def show_incl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
-            visible_layers.append(lp)
+            append_visible_layer_if_needed(lp)
         
         def show_excl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
             pass
-            
+        
         def select_incl(iter: pya.LayerPropertiesIterator, lp: pya.LayerPropertiesNodeRef):
             nonlocal selected_layer
             selected_layer = lp
