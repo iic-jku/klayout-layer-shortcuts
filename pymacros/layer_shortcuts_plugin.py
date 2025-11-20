@@ -320,13 +320,22 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         menu.insert_separator("edit_menu.end", "layer_navigation_separator")
         menu.insert_menu("edit_menu.end", "layer_navigation_group",  "Layer Navigation")
 
-        for i, s in enumerate(pdk_info.shortcuts):
-            action = pya.Action()
-            action.default_shortcut = s.key
-            action.shortcut = s.key
-            action.title = s.title
-            action.on_triggered += lambda a=action, p=pdk_info, s=s: self.trigger_shortcut(a, p, s)
-            menu.insert_item(f"edit_menu.layer_navigation_group.#{i}", f"shortcut_{i}", action)
+        for i, m in enumerate(pdk_info.menu_items):
+            match m.kind:
+                case MenuItemKind.SEPARATOR:
+                    menu.insert_separator(f"edit_menu.layer_navigation_group.#{i}", f"layer_navigation_separator_{i}")
+                    
+                case MenuItemKind.SHORTCUT:
+                    s = m.shortcut
+                    action = pya.Action()
+                    action.default_shortcut = s.key
+                    action.shortcut = s.key
+                    action.title = s.title
+                    action.on_triggered += lambda a=action, p=pdk_info, s=s: self.trigger_shortcut(a, p, s)
+                    menu.insert_item(f"edit_menu.layer_navigation_group.#{i}", f"shortcut_{i}", action)
+                
+                case _:
+                    raise NotImplementedError(f"unknown kind: {m.kind}")
 
     def setup(self):
         if self._in_conflicting_shortcut_dialog:
@@ -384,11 +393,20 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         
         configured_shortcuts: List[Tuple[str, str]] = []
         configured_shortcut_keys: Set[str] = set()
-        for i, s in enumerate(pdk_info.shortcuts):
-            if s.key in configured_shortcuts:
-                print(f"[ERROR] in LayerShortcuts configuration for {self.tech.name}, shortcut '{s.key}' is defined multiple times")
-            configured_shortcuts.append((s.title, s.key))
-            configured_shortcut_keys.add(s.key)
+        for i, m in enumerate(pdk_info.menu_items):
+            match m.kind:
+                case MenuItemKind.SEPARATOR:
+                    continue
+                    
+                case MenuItemKind.SHORTCUT:
+                    s = m.shortcut
+                    if s.key in configured_shortcuts:
+                        print(f"[ERROR] in LayerShortcuts configuration for {self.tech.name}, shortcut '{s.key}' is defined multiple times")
+                    configured_shortcuts.append((s.title, s.key))
+                    configured_shortcut_keys.add(s.key)
+                
+                case _:
+                    raise NotImplementedError(f"unknown kind: {m.kind}")
 
         conflicts: List[Tuple[str, pya.Action]] = []
         conflict_keys: Set[str] = set()

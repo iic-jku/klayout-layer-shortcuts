@@ -56,7 +56,7 @@ class LayerDescriptor:
 
 class ActionKind(StrEnum):
     RESET_AND_SHOW_ALL_LAYERS = 'reset_and_show_all_layers'
-    RESET_AND_HIDE_ALL_LAYERS = 'reset_and_hid_all_layers'
+    RESET_AND_HIDE_ALL_LAYERS = 'reset_and_hide_all_layers'
     HIDE_LAYERS = 'hide_layers'
     SHOW_LAYERS = 'show_layers'
     SELECT_LAYER = 'select_layers'
@@ -74,13 +74,33 @@ class Shortcut:
     key: str
     actions: List[Action]
 
+
+class MenuItemKind(StrEnum):
+    SHORTCUT = 'shortcut'
+    SEPARATOR = 'separator'
+
+
+@dataclass
+class MenuItem:
+    kind: MenuItemKind
+    shortcut: Optional[Shortcut] = None
+    
+    @classmethod
+    def separator(cls) -> MenuItem:
+        return MenuItem(kind=MenuItemKind.SEPARATOR)
+        
+    @classmethod
+    def for_shortcut(cls, shortcut: Shortcut) -> MenuItem:
+        return MenuItem(kind=MenuItemKind.SHORTCUT, shortcut=shortcut)
+    
+
 #--------------------------------------------------------------------------------
 
 @dataclass
 class PDKInfo:
     tech_name: str
     layer_group_definitions: List[NamedLayerGroup]
-    shortcuts: List[Shortcut]
+    menu_items: List[MenuItem]
     
     @classmethod
     def read_json(cls, path: Path) -> PDKInfo:
@@ -117,41 +137,66 @@ def build_example_pdk_info() -> PDKInfo:
     def met_layers(name: str) -> List[str]:
         return [f"{name}.drawing", f"{name}.pin", f"{name}.text", f"{name}.label", f"{name}.filler", f"{name}.nofill"]
 
-    def met_shortcut(prefix: str, key: str, i: int) -> List[Shortcut]:
-        return [
-            Shortcut(title=f"Focus on {prefix}{i} layers", key=key, actions=[
-                Action(kind=ActionKind.HIDE_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL)),
-                Action(kind=ActionKind.SHOW_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=[f"{prefix}{i}.Visible"])),
-                Action(kind=ActionKind.SELECT_LAYER, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=[f"{prefix}{i}.Selected"])),
-            ]),
+    def create_group_shortcut(title: str, 
+                              key: str, 
+                              visible_layer_groups: List[str], 
+                              selected_layer_groups: List[str], 
+                              hide_others: bool) -> MenuItem:
+        actions = [Action(kind=ActionKind.HIDE_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL))] if hide_others else []
+        
+        actions += [
+            Action(kind=ActionKind.SHOW_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=visible_layer_groups)),
+            Action(kind=ActionKind.SELECT_LAYER, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=selected_layer_groups))
         ]
         
-    layer_group_definitions: List[NamedLayerGroup] = []
-    shortcuts: List[Shortcut] = [
-        Shortcut(title='Show default layers', key='0', actions=[
-            Action(kind=ActionKind.RESET_AND_SHOW_ALL_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL))
-        ]),
-        Shortcut(title='Hide default layers', key=',', actions=[
-            Action(kind=ActionKind.RESET_AND_HIDE_ALL_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL))
-        ]),
-    ]
-    for i in range(1, 6):
-        shortcuts += met_shortcut(prefix='Metal', key=str(i), i=i)
-    for i in range(1, 3):
-        shortcuts += met_shortcut(prefix='TopMetal', key=str(5+i), i=i)
-    shortcuts += [
-            Shortcut(title='Focus on GatPoly layers', key='8', actions=[
-                Action(kind=ActionKind.HIDE_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL)),
-                Action(kind=ActionKind.SHOW_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=['GatPoly.Visible'])),
-                Action(kind=ActionKind.SELECT_LAYER, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=['GatPoly.Selected'])),
-            ]),
-            Shortcut(title='Focus on Activ layers', key='9', actions=[
-                Action(kind=ActionKind.HIDE_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL)),
-                Action(kind=ActionKind.SHOW_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=['Activ.Visible'])),
-                Action(kind=ActionKind.SELECT_LAYER, layers=LayerDescriptor(kind=LayerDescriptorKind.LAYER_GROUPS, layer_groups=['Activ.Selected'])),
-            ]),
-    ]
+        return MenuItem.for_shortcut(Shortcut(title=title, key=key, actions=actions))
 
+    def met_menu_items(title_prefix: str, 
+                       layer_prefix: str, 
+                       key: str, 
+                       i: int, 
+                       hide_others: bool) -> List[MenuItem]:
+        menu_items = [
+            create_group_shortcut(title=f"{title_prefix} {layer_prefix}{i} layers",
+                                  key=key,
+                                  visible_layer_groups=[f"{layer_prefix}{i}.Visible"],
+                                  selected_layer_groups=[f"{layer_prefix}{i}.Selected"],
+                                  hide_others=hide_others)
+        ]
+        return menu_items
+        
+    layer_group_definitions: List[NamedLayerGroup] = []
+    menu_items: List[MenuItem] = [
+        MenuItem.for_shortcut(Shortcut(title='Show default layers', key='0', actions=[
+            Action(kind=ActionKind.RESET_AND_SHOW_ALL_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL))
+        ])),
+        MenuItem.for_shortcut(Shortcut(title='Hide default layers', key=',', actions=[
+            Action(kind=ActionKind.RESET_AND_HIDE_ALL_LAYERS, layers=LayerDescriptor(kind=LayerDescriptorKind.ALL))
+        ])),
+        MenuItem.separator(),
+    ]
+    for title_prefix, key_prefix, hide_others, add_separator in (
+        ('Focus on', '',       True, True), 
+        ('Add',     'Shift+', False, False)
+    ):
+        for i in range(1, 6):
+            menu_items += met_menu_items(title_prefix=title_prefix, layer_prefix='Metal', key=f"{key_prefix}{i}", i=i, hide_others=hide_others)
+        for i in range(1, 3):
+            menu_items += met_menu_items(title_prefix=title_prefix, layer_prefix='TopMetal', key=f"{key_prefix}{5+i}", i=i, hide_others=hide_others)
+        menu_items += [
+            create_group_shortcut(title=f"{title_prefix} GatPoly layers", 
+                                  key=f"{key_prefix}8", 
+                                  visible_layer_groups=['GatPoly.Visible'],
+                                  selected_layer_groups=['GatPoly.Selected'],
+                                  hide_others=hide_others),
+            create_group_shortcut(title=f"{title_prefix} Activ layers", 
+                                  key=f"{key_prefix}9", 
+                                  visible_layer_groups=['Activ.Visible'],
+                                  selected_layer_groups=['Activ.Selected'],
+                                  hide_others=hide_others),
+        ]
+        if add_separator:
+            menu_items += [MenuItem.separator()]
     pi = PDKInfo(
         tech_name='sg13g2',
         layer_group_definitions = [
@@ -179,7 +224,7 @@ def build_example_pdk_info() -> PDKInfo:
                                                           'pSD.drawing', 'nSD.drawing', 'SalBlock.drawing', 'RES.drawing']),
             NamedLayerGroup(name='Activ.Selected', layers=['Activ.drawing']),
         ],
-        shortcuts=shortcuts
+        menu_items=menu_items
     )
     return pi
     
@@ -194,9 +239,9 @@ class PDKInfoTests(unittest.TestCase):
         self.assertEqual('sg13g2', self.pi.tech_name)
         self.assertEqual('Metal1.Visible', self.pi.layer_group_definitions[0].name)
         self.assertIn('Metal1.drawing', self.pi.layer_group_definitions[0].layers)
-        self.assertEqual('Show default layers', self.pi.shortcuts[0].title)
-        self.assertEqual('0', self.pi.shortcuts[0].key)
-        self.assertEqual(ActionKind.RESET_AND_SHOW_ALL_LAYERS, self.pi.shortcuts[0].actions[0].kind)
+        self.assertEqual('Show default layers', self.pi.menu_items[0].shortcut.title)
+        self.assertEqual('0', self.pi.menu_items[0].shortcut.key)
+        self.assertEqual(ActionKind.RESET_AND_SHOW_ALL_LAYERS, self.pi.menu_items[0].shortcut.actions[0].kind)
 
     def dump_pdk_info(self, pdk_info) -> str:
         path = os.path.abspath('ihp-sg13g2.json')
