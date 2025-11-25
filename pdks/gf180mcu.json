@@ -176,7 +176,7 @@
                 "key": ",",
                 "actions": [
                     {
-                        "kind": "reset_and_hid_all_layers",
+                        "kind": "reset_and_hide_all_layers",
                         "layers": {
                             "kind": "all",
                             "layers": null,
