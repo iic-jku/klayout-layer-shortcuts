@@ -213,6 +213,16 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         if Debugging.DEBUG:
             debug(f"LayerShortcutsPluginFactory.trigger_shortcut: {action} {action.title}")
         
+        self.view.transaction(action.title)
+        try:
+            self.switch_layers(action, pdk_info, shortcut)
+        finally:
+            self.view.commit()
+        
+    def switch_layers(self, action: pya.Action, pdk_info: PDKInfo, shortcut: Shortcut):
+        if Debugging.DEBUG:
+            debug(f"LayerShortcutsPluginFactory.switch_layers: {action} {action.title}")
+        
         source_list_idx = 0
         visible_layers: List[pya.LayerProperties] = list(self.each_layer(self.view.current_layer_list))
         selected_layer = None
