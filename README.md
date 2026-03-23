@@ -34,11 +34,20 @@ This following table describes the shortcuts of our default IHP SG13G2 configura
 | `7`      | Focus on 7th metal and related vias   |
 | `8`      | Focus on Gate Poly and related layers |
 | `9`      | Focus on Diffusion and related layers |
+| `Shift+1`      | Extend the focus to include 1st metal and related vias   |
+| `Shift+2`      | Extend the focus to include 2nd metal and related vias   |
+| `Shift+3`      | Extend the focus to include 3rd metal and related vias   |
+| `Shift+4`      | Extend the focus to include 4th metal and related vias   |
+| `Shift+5`      | Extend the focus to include 5th metal and related vias   |
+| `Shift+6`      | Extend the focus to include 6th metal and related vias   |
+| `Shift+7`      | Extend the focus to include 7th metal and related vias   |
+| `Shift+8`      | Extend the focus to include Gate Poly and related vias   |
+| `Shift+9`      | Extend the focus to include Diffusion and related vias   |
 
 ## Supported PDKs
 
 Currently, we support the following PDKs:
-   - `IHP SG13G2`: https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/ihp-sg13g2.json
+   - IHP `SG13G2`: https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/ihp-sg13g2.json
    - Skywater `sky130`: https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/sky130.json
    - Global Foundries `gf180mcu`: https://github.com/iic-jku/klayout-layer-shortcuts/blob/main/pdks/gf180mcu.json
 
