@@ -233,43 +233,44 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         def apply_function(layer_descriptor: LayerDescriptor,
                            incl_function: Callable[pya.LayerPropertiesIterator, pya.LayerPropertiesNodeRef], 
                            excl_function: Callable[pya.LayerPropertiesIterator, pya.LayerPropertiesNodeRef]):
-            match layer_descriptor.kind:
-                case LayerDescriptorKind.ALL:
-                    iter = self.view.begin_layers(source_list_idx)
-                    while not iter.at_end():
-                        lp = iter.current()
+            if layer_descriptor.kind == LayerDescriptorKind.ALL:
+                iter = self.view.begin_layers(source_list_idx)
+                while not iter.at_end():
+                    lp = iter.current()
+                    incl_function(iter, lp)
+                    iter.next()
+            elif layer_descriptor.kind == LayerDescriptorKind.NONE:
+                iter = self.view.begin_layers(source_list_idx)
+                while not iter.at_end():
+                    lp = iter.current()
+                    excl_function(iter, lp)
+                    iter.next()
+            elif layer_descriptor.kind == LayerDescriptorKind.LAYERS:
+                iter = self.view.begin_layers(source_list_idx)
+                while not iter.at_end():
+                    lp = iter.current()
+                    if lp.name in layer_descriptor.layers:
                         incl_function(iter, lp)
-                        iter.next()
-                case LayerDescriptorKind.NONE:
-                    iter = self.view.begin_layers(source_list_idx)
-                    while not iter.at_end():
-                        lp = iter.current()
+                    else:
                         excl_function(iter, lp)
-                        iter.next()
-                case LayerDescriptorKind.LAYERS:
-                    iter = self.view.begin_layers(source_list_idx)
-                    while not iter.at_end():
-                        lp = iter.current()
-                        if lp.name in layer_descriptor.layers:
-                            incl_function(iter, lp)
-                        else:
-                            excl_function(iter, lp)
-                        iter.next()
-                case LayerDescriptorKind.LAYER_GROUPS:
-                    layer_groups = pdk_info.layer_groups(layer_descriptor.layer_groups)
-                    layer_names = {l for g in layer_groups for l in g.layers}
-                    
-                    iter = self.view.begin_layers(source_list_idx)
-                    while not iter.at_end():
-                        lp = iter.current()
-                        lname = lp_name(lp)
-                        if lname is None:
-                            continue
-                        if lname in layer_names:
-                            incl_function(iter, lp)
-                        else:
-                            excl_function(iter, lp)
-                        iter.next()
+                    iter.next()
+            elif layer_descriptor.kind == LayerDescriptorKind.LAYER_GROUPS:
+                layer_groups = pdk_info.layer_groups(layer_descriptor.layer_groups)
+                layer_names = {l for g in layer_groups for l in g.layers}
+                
+                iter = self.view.begin_layers(source_list_idx)
+                while not iter.at_end():
+                    lp = iter.current()
+                    lname = lp_name(lp)
+                    if lname is None:
+                        continue
+                    if lname in layer_names:
+                        incl_function(iter, lp)
+                    else:
+                        excl_function(iter, lp)
+                    iter.next()
+            else:
+                raise NotImplementedError(f"unknown LayerDescriptorKind {layer_descriptor.kind}")
         
         def remove_visible_layer(lp: pya.LayerPropertiesNodeRef):
             nonlocal visible_layers
@@ -303,33 +304,32 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
             pass
 
         for action in shortcut.actions:
-            match action.kind:
-                case ActionKind.RESET_AND_SHOW_ALL_LAYERS:
-                    self.view.current_layer_list = 0
-                    self.remove_layer_list('LayNav')
-                    for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
-                        lp.visible = True
-                    self.view.update_content()
-                    if self._hide_empty_layers_user_cfg:
-                        self.set_config_hide_empty_layers(True)
-                    return
-                case ActionKind.RESET_AND_HIDE_ALL_LAYERS:
-                    self.view.current_layer_list = 0
-                    self.remove_layer_list('LayNav')
-                    for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
-                        lp.visible = False
-                    self.view.update_content()
-                    if self._hide_empty_layers_user_cfg:
-                        self.set_config_hide_empty_layers(True)
-                    return
-                case ActionKind.HIDE_LAYERS:
-                    apply_function(action.layers, hide_incl, hide_excl)
-                case ActionKind.SHOW_LAYERS:
-                    apply_function(action.layers, show_incl, show_excl)
-                case ActionKind.SELECT_LAYER:
-                    apply_function(action.layers, select_incl, select_excl)
-                case _:
-                    raise NotImplementedError()
+            if action.kind == ActionKind.RESET_AND_SHOW_ALL_LAYERS:
+                self.view.current_layer_list = 0
+                self.remove_layer_list('LayNav')
+                for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
+                    lp.visible = True
+                self.view.update_content()
+                if self._hide_empty_layers_user_cfg:
+                    self.set_config_hide_empty_layers(True)
+                return
+            elif action.kind == ActionKind.RESET_AND_HIDE_ALL_LAYERS:
+                self.view.current_layer_list = 0
+                self.remove_layer_list('LayNav')
+                for lp in self.view.each_layer():  # not using apply_function, it works only with LayTab tab
+                    lp.visible = False
+                self.view.update_content()
+                if self._hide_empty_layers_user_cfg:
+                    self.set_config_hide_empty_layers(True)
+                return
+            elif action.kind == ActionKind.HIDE_LAYERS:
+                apply_function(action.layers, hide_incl, hide_excl)
+            elif action.kind == ActionKind.SHOW_LAYERS:
+                apply_function(action.layers, show_incl, show_excl)
+            elif action.kind == ActionKind.SELECT_LAYER:
+                apply_function(action.layers, select_incl, select_excl)
+            else:
+                raise NotImplementedError(f"unknown ActionKind {action.kind}")
 
         # NOTE: When the user executes any focus commands, 
         #       we can assume that the layers should be made visible
@@ -353,21 +353,18 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         menu.insert_menu("edit_menu.end", "layer_navigation_group",  "Layer Navigation")
 
         for i, m in enumerate(pdk_info.menu_items):
-            match m.kind:
-                case MenuItemKind.SEPARATOR:
-                    menu.insert_separator(f"edit_menu.layer_navigation_group.#{i}", f"layer_navigation_separator_{i}")
-                    
-                case MenuItemKind.SHORTCUT:
-                    s = m.shortcut
-                    action = pya.Action()
-                    action.default_shortcut = s.key
-                    action.shortcut = s.key
-                    action.title = s.title
-                    action.on_triggered += lambda a=action, p=pdk_info, s=s: self.trigger_shortcut(a, p, s)
-                    menu.insert_item(f"edit_menu.layer_navigation_group.#{i}", f"shortcut_{i}", action)
-                
-                case _:
-                    raise NotImplementedError(f"unknown kind: {m.kind}")
+            if m.kind == MenuItemKind.SEPARATOR:
+                menu.insert_separator(f"edit_menu.layer_navigation_group.#{i}", f"layer_navigation_separator_{i}")
+            elif m.kind == MenuItemKind.SHORTCUT:
+                s = m.shortcut
+                action = pya.Action()
+                action.default_shortcut = s.key
+                action.shortcut = s.key
+                action.title = s.title
+                action.on_triggered += lambda a=action, p=pdk_info, s=s: self.trigger_shortcut(a, p, s)
+                menu.insert_item(f"edit_menu.layer_navigation_group.#{i}", f"shortcut_{i}", action)
+            else:
+                raise NotImplementedError(f"unknown MenuItemKind: {m.kind}")
 
     def setup(self):
         if self._in_conflicting_shortcut_dialog:
@@ -426,19 +423,16 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
         configured_shortcuts: List[Tuple[str, str]] = []
         configured_shortcut_keys: Set[str] = set()
         for i, m in enumerate(pdk_info.menu_items):
-            match m.kind:
-                case MenuItemKind.SEPARATOR:
-                    continue
-                    
-                case MenuItemKind.SHORTCUT:
-                    s = m.shortcut
-                    if s.key in configured_shortcuts:
-                        print(f"[ERROR] in LayerShortcuts configuration for {self.tech.name}, shortcut '{s.key}' is defined multiple times")
-                    configured_shortcuts.append((s.title, s.key))
-                    configured_shortcut_keys.add(s.key)
-                
-                case _:
-                    raise NotImplementedError(f"unknown kind: {m.kind}")
+            if m.kind == MenuItemKind.SEPARATOR:
+                continue
+            elif m.kind == MenuItemKind.SHORTCUT:
+                s = m.shortcut
+                if s.key in configured_shortcuts:
+                    print(f"[ERROR] in LayerShortcuts configuration for {self.tech.name}, shortcut '{s.key}' is defined multiple times")
+                configured_shortcuts.append((s.title, s.key))
+                configured_shortcut_keys.add(s.key)
+            else:
+                raise NotImplementedError(f"unknown MenuItemKind: {m.kind}")
 
         conflicts: List[Tuple[str, pya.Action]] = []
         conflict_keys: Set[str] = set()
