@@ -11,7 +11,8 @@
                 "Metal1_Dummy 34/4@1",
                 "Metal1_Res 110/11@1",
                 "Contact 33/0@1",
-                "Via1 35/0@1"
+                "Via1 35/0@1",
+                "PMNDMY 152/5@1"
             ]
         },
         {
@@ -30,7 +31,8 @@
                 "Metal2_Dummy 36/4@1",
                 "Metal2_Res 110/12@1",
                 "Via1 35/0@1",
-                "Via2 38/0@1"
+                "Via2 38/0@1",
+                "PMNDMY 152/5@1"
             ]
         },
         {
@@ -49,7 +51,8 @@
                 "Metal3_Dummy 42/4@1",
                 "Metal3_Res 110/13@1",
                 "Via2 38/0@1",
-                "Via3 40/0@1"
+                "Via3 40/0@1",
+                "PMNDMY 152/5@1"
             ]
         },
         {
@@ -68,7 +71,8 @@
                 "Metal4_Dummy 46/4@1",
                 "Metal4_Res 110/14@1",
                 "Via3 40/0@1",
-                "Via4 41/0@1"
+                "Via4 41/0@1",
+                "PMNDMY 152/5@1"
             ]
         },
         {
@@ -87,7 +91,8 @@
                 "Metal5_Dummy 81/4@1",
                 "Metal5_Res 110/15@1",
                 "Via4 41/0@1",
-                "Via5 82/0@1"
+                "Via5 82/0@1",
+                "PMNDMY 152/5@1"
             ]
         },
         {
@@ -105,7 +110,8 @@
                 "MetalT_BLK 53/5@1",
                 "MetalTop_Dummy 53/4@1",
                 "Metal6_Res 110/16@1",
-                "Via5 82/0@1"
+                "Via5 82/0@1",
+                "PMNDMY 152/5@1"
             ]
         },
         {
@@ -119,7 +125,13 @@
             "layers": [
                 "Poly2 30/0@1",
                 "Poly2_Label 30/10@1",
-                "Contact 33/0@1"
+                "Poly2_Dummy 3'/4@1",
+                "Contact 33/0@1",
+                "HVPOLYRS 123/5@1",
+                "PLFUSE 125/5@1",
+                "PMNDMY 152/5@1",
+                "POLYFUSE 220/0@1",
+                "FHRES227/0@1"
             ]
         },
         {
@@ -141,7 +153,34 @@
                 "Pplus 31/0@1",
                 "Dualgate 55/0@1",
                 "Resistor 62/0@1",
-                "Contact 33/0@1"
+                "Contact 33/0@1",
+                "ISOSUB 23/5@1",
+                "ESD 24/0@1",
+                "ESD_MK 24/5@1",
+                "SAB 49/0@1",
+                "Dualgate 55/0@1",
+                "NEO_EE_MK 88/17@1",
+                "LVS_RF 100/5@1",
+                "LVS_Drain 100/7@1",
+                "LVS_Source 100/8@1",
+                "SramCore 108/5@1",
+                "RES_MK 110/5@1",
+                "NDMY 111/5@1",
+                "V5_XTOR 112/1@1",
+                "DIODE_MK 115/5@1",
+                "MDIODE 116/5@1",
+                "LVS_BJT 118/5@1",
+                "LVS_IO 119/5@1",
+                "DRC_BJT 127/5@1",
+                "Latchup_MK 137/5@1",
+                "WELL_DIODE_MK 153/51@1",
+                "MOS_CAP_MK 166/5@1",
+                "OTP_MK 173/5@1",
+                "ZENER 178/0@1",
+                "MVSD 210/0@1",
+                "MVPSD 11/39@1",
+                "LDMOS_XTOR 226/0@1",
+                "Schottky_diode 241/0@1"
             ]
         },
         {
