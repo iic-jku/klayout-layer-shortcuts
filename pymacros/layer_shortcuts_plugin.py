@@ -372,19 +372,21 @@ class LayerShortcutsPluginFactory(pya.PluginFactory):
                 debug(f"LayerShortcutsPluginFactory.setup, "
                       f"conflicting shortcut dialog already displayed, early exit")
             return
-          
+        
         try:
             if Debugging.DEBUG:
                 msg = f"LayerShortcutsPluginFactory.setup, "\
                       f"for cell view {self.cell_view.cell_name}, "
                 if self.layout is None:
                     msg += "no layout yet"
+                elif self.tech is None:
+                    msg += "no tech yet"
                 else:
                     msg += f"tech: {self.tech.name}, "\
                            f"self.tech.name: {self.tech.name}"
                 debug(msg)
     
-            if self.layout is None:
+            if self.layout is None or self.tech is None:
                 self.clear_menu()
             else:
                 self.check_for_ambiguous_shortcuts()
