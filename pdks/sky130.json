@@ -1,5 +1,5 @@
 {
-    "tech_name": "sky130",
+    "tech_name": "sky130A",
     "layer_group_definitions": [
         {
             "name": "li1.Visible",
